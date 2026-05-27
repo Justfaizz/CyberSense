@@ -2,6 +2,10 @@ export interface Profile {
   id: string
   full_name: string
   role: 'student' | 'admin'
+  avatar_url: string | null
+  bio: string | null
+  institution: string | null
+  contact_email: string | null
   created_at: string
 }
 

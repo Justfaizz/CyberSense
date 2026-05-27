@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import UserProfileClient from './ProfileClient'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -77,17 +78,15 @@ export default async function ProfilePage() {
         <h1 className="page-title" style={{ color: 'var(--neon-blue)' }}>AGENT PROFILE</h1>
 
         <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', marginBottom: '40px' }}>
-          {/* Profile card */}
-          <div className="glass-card" style={{ flex: 1, minWidth: '280px', padding: '40px', textAlign: 'center' }}>
-            <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(0,240,255,0.1)', border: '2px solid var(--neon-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <i className="fa-solid fa-user" style={{ fontSize: '3rem', color: 'var(--neon-blue)' }} />
-            </div>
-            <h2 style={{ fontFamily: 'Orbitron', color: 'white', marginBottom: '8px' }}>{profile?.full_name}</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '5px' }}>{user.email}</p>
-            <span className="status-badge" style={{ background: 'rgba(196,144,228,0.1)', color: 'var(--neon-purple)', border: '1px solid var(--neon-purple)' }}>
-              STUDENT
-            </span>
-          </div>
+          {/* Profile card — editable */}
+          <UserProfileClient
+            userId={user.id}
+            fullName={profile?.full_name ?? ''}
+            email={user.email ?? ''}
+            avatarUrl={profile?.avatar_url ?? null}
+            bio={profile?.bio ?? ''}
+            institution={profile?.institution ?? ''}
+          />
 
           {/* Stats */}
           <div style={{ flex: 2, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>

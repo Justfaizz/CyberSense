@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import AdminProfileClient from './ProfileClient'
 
 export default async function AdminProfilePage() {
   const supabase = await createClient()
@@ -39,16 +40,14 @@ export default async function AdminProfilePage() {
       <main className="main-content">
         <h1 style={{ fontFamily: 'Orbitron', color: 'var(--neon-blue)', marginBottom: '40px' }}>ADMIN PROFILE</h1>
 
-        <div className="glass-card" style={{ padding: '40px', maxWidth: '500px', textAlign: 'center' }}>
-          <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(0,240,255,0.1)', border: '2px solid var(--neon-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 25px' }}>
-            <i className="fa-solid fa-user-shield" style={{ fontSize: '3rem', color: 'var(--neon-blue)' }} />
-          </div>
-          <h2 style={{ fontFamily: 'Orbitron', color: 'white', marginBottom: '8px' }}>{profile?.full_name}</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '15px' }}>{user.email}</p>
-          <span className="status-badge" style={{ background: 'rgba(0,240,255,0.1)', color: 'var(--neon-blue)', border: '1px solid var(--neon-blue)' }}>
-            SYSTEM ADMINISTRATOR
-          </span>
-        </div>
+        <AdminProfileClient
+          userId={user.id}
+          fullName={profile?.full_name ?? ''}
+          email={user.email ?? ''}
+          avatarUrl={profile?.avatar_url ?? null}
+          bio={profile?.bio ?? ''}
+          contactEmail={profile?.contact_email ?? ''}
+        />
       </main>
     </div>
   )
