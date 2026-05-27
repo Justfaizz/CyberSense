@@ -4,12 +4,34 @@ import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { TextScramble } from '@/components/ui/text-scramble'
+import type { Video } from '@/lib/types'
 
 interface Props {
   userName: string
   passedIds: number[]
   progress: number
   leaderboard: { full_name: string; count: number }[]
+  latestVideos: Video[]
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  cyberbullying: 'var(--neon-red)',
+  phishing: 'var(--neon-purple)',
+  account_security: 'var(--neon-blue)',
+  general_safety: 'var(--neon-green)',
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  cyberbullying: 'CYBERBULLYING',
+  phishing: 'PHISHING',
+  account_security: 'ACCOUNT SECURITY',
+  general_safety: 'GENERAL SAFETY',
+}
+
+function fmtDuration(sec: number) {
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
 const QUOTES = [
@@ -22,11 +44,12 @@ const QUOTES = [
 
 const CYBER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*<>[]{}|/\\'
 
-export default function HomeClient({ userName, passedIds, progress, leaderboard }: Props) {
+export default function HomeClient({ userName, passedIds, progress, leaderboard, latestVideos }: Props) {
   const router = useRouter()
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [trigger, setTrigger] = useState(true)
   const [authorVisible, setAuthorVisible] = useState(false)
+  const [expandedVideoId, setExpandedVideoId] = useState<number | null>(null)
 
   const mod2Unlocked = passedIds.includes(1)
   const mod3Unlocked = passedIds.includes(2)
@@ -60,6 +83,9 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard 
           </a>
           <a href="/user/learning" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-book" /></div><span>LEARN</span>
+          </a>
+          <a href="/user/videos" className="nav-item">
+            <div className="icon-box"><i className="fa-solid fa-play-circle" /></div><span>VIDEOS</span>
           </a>
           <div className="nav-section-title">ACCOUNT</div>
           <a href="/user/profile" className="nav-item">
@@ -171,6 +197,82 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard 
             </div>
           </div>
         </div>
+
+        {/* Quick Watch */}
+        {latestVideos.length > 0 && (
+          <div style={{ marginTop: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 className="section-label" style={{ color: 'var(--neon-blue)', margin: 0 }}>QUICK WATCH</h3>
+              <a href="/user/videos" style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.78rem', textDecoration: 'none', letterSpacing: '1px' }}>
+                VIEW ALL →
+              </a>
+            </div>
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+              {latestVideos.map(v => {
+                const isExpanded = expandedVideoId === v.id
+                const color = CATEGORY_COLORS[v.category]
+                return (
+                  <div key={v.id} className="glass-card" style={{
+                    flex: '1 1 200px', minWidth: '200px', maxWidth: '300px',
+                    padding: 0, overflow: 'hidden',
+                    border: `1px solid ${isExpanded ? color : 'var(--glass-border)'}`,
+                    transition: 'border-color 0.3s',
+                  }}>
+                    {isExpanded ? (
+                      <div style={{ position: 'relative' }}>
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${v.youtube_id}?autoplay=1&rel=0&modestbranding=1`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
+                        />
+                        <button onClick={() => setExpandedVideoId(null)} style={{
+                          position: 'absolute', top: '6px', right: '6px',
+                          background: 'rgba(0,0,0,0.75)', border: 'none', color: 'white',
+                          width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer',
+                          fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>✕</button>
+                      </div>
+                    ) : (
+                      <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setExpandedVideoId(v.id)}>
+                        <img
+                          src={`https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg`}
+                          alt={v.title}
+                          style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }}
+                        />
+                        <div style={{
+                          position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          opacity: 0, transition: 'opacity 0.2s',
+                        }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.opacity = '1' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.opacity = '0' }}
+                        >
+                          <div style={{ width: '44px', height: '44px', background: 'rgba(0,240,255,0.9)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <i className="fa-solid fa-play" style={{ color: '#000', fontSize: '1rem', marginLeft: '3px' }} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <span style={{ color, fontSize: '0.68rem', fontFamily: 'Orbitron', letterSpacing: '0.5px', fontWeight: 700 }}>
+                          {CATEGORY_LABELS[v.category]}
+                        </span>
+                        <span style={{ color: 'var(--text-muted)', fontFamily: 'Orbitron', fontSize: '0.75rem' }}>
+                          {fmtDuration(v.duration_sec)}
+                        </span>
+                      </div>
+                      <p style={{ color: 'white', fontFamily: 'Montserrat', fontWeight: 600, fontSize: '0.82rem', margin: 0, lineHeight: 1.4 }}>
+                        {v.title}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

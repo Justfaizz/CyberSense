@@ -36,12 +36,21 @@ export default async function HomePage() {
   }
   const lbSorted = Object.values(lbMap).sort((a, b) => b.count - a.count).slice(0, 5)
 
+  // Latest 3 active videos for Quick Watch
+  const { data: latestVideos } = await supabase
+    .from('videos')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(3)
+
   return (
     <HomeClient
       userName={profile?.full_name ?? 'Student'}
       passedIds={passedIds}
       progress={progress}
       leaderboard={lbSorted}
+      latestVideos={latestVideos ?? []}
     />
   )
 }

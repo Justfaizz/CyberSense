@@ -58,6 +58,9 @@ export default async function AdminDashboard() {
           <a href="/admin/modules" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-microchip" /></div><span>MODULES</span>
           </a>
+          <a href="/admin/videos" className="nav-item">
+            <div className="icon-box"><i className="fa-solid fa-play-circle" /></div><span>VIDEOS</span>
+          </a>
           <div className="nav-section-title">SYSTEM</div>
           <a href="/admin/profile" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-user" /></div><span>PROFILE</span>

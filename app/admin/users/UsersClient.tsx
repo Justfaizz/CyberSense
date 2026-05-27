@@ -83,6 +83,7 @@ export default function UsersClient({ initialUsers }: Props) {
           <a href="/admin/dashboard" className="nav-item"><div className="icon-box"><i className="fa-solid fa-chart-pie" /></div><span>DASHBOARD</span></a>
           <a href="/admin/users" className="nav-item active"><div className="icon-box"><i className="fa-solid fa-users" /></div><span>USERS</span></a>
           <a href="/admin/modules" className="nav-item"><div className="icon-box"><i className="fa-solid fa-microchip" /></div><span>MODULES</span></a>
+          <a href="/admin/videos" className="nav-item"><div className="icon-box"><i className="fa-solid fa-play-circle" /></div><span>VIDEOS</span></a>
           <div className="nav-section-title">SYSTEM</div>
           <a href="/admin/profile" className="nav-item"><div className="icon-box"><i className="fa-solid fa-user" /></div><span>PROFILE</span></a>
         </nav>

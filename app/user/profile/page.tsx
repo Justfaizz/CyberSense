@@ -31,6 +31,9 @@ export default async function ProfilePage() {
           <a href="/user/learning" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-book" /></div><span>LEARN</span>
           </a>
+          <a href="/user/videos" className="nav-item">
+            <div className="icon-box"><i className="fa-solid fa-play-circle" /></div><span>VIDEOS</span>
+          </a>
           <div className="nav-section-title">ACCOUNT</div>
           <a href="/user/profile" className="nav-item active">
             <div className="icon-box"><i className="fa-solid fa-user" /></div><span>PROFILE</span>
