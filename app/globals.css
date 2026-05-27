@@ -67,7 +67,8 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
 }
 
 .sidebar { width: 260px; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-.main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; overflow-y: auto; }
+.main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.main-content::-webkit-scrollbar { display: none; }
 
 .sidebar-header { margin-bottom: 10px; }
 
