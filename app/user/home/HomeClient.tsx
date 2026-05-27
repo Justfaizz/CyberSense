@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { TextScramble } from '@/components/ui/text-scramble'
 
 interface Props {
   userName: string
@@ -19,11 +20,13 @@ const QUOTES = [
   { text: '"A strong password keeps out hackers; a strong boundary keeps out bullies."', author: 'Cybersense' },
 ]
 
+const CYBER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*<>[]{}|/\\'
+
 export default function HomeClient({ userName, passedIds, progress, leaderboard }: Props) {
   const router = useRouter()
-  const quoteTextRef   = useRef<HTMLParagraphElement>(null)
-  const quoteAuthorRef = useRef<HTMLSpanElement>(null)
-  const quoteIndex     = useRef(0)
+  const [quoteIndex, setQuoteIndex] = useState(0)
+  const [trigger, setTrigger] = useState(true)
+  const [authorVisible, setAuthorVisible] = useState(false)
 
   const mod2Unlocked = passedIds.includes(1)
   const mod3Unlocked = passedIds.includes(2)
@@ -34,41 +37,16 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard 
     router.push('/login')
   }
 
-  // Typewriter animation
-  useEffect(() => {
-    const el = quoteTextRef.current
-    const au = quoteAuthorRef.current
-    if (!el || !au) return
-
-    au.style.transition = 'opacity 0.5s ease'
-    au.style.opacity = '0'
-
-    let cancelled = false
-    function typeText(text: string, index: number) {
-      if (cancelled) return
-      if (index <= text.length) {
-        el!.innerHTML = text.substring(0, index) + '<span class="cursor">&nbsp;</span>'
-        setTimeout(() => typeText(text, index + 1), Math.floor(Math.random() * 40) + 30)
-      } else {
-        au!.innerText = '- ' + QUOTES[quoteIndex.current].author
-        au!.style.opacity = '1'
-        setTimeout(() => eraseText(text, index), 4000)
-      }
-    }
-    function eraseText(text: string, index: number) {
-      if (cancelled) return
-      if (index >= 0) {
-        el!.innerHTML = text.substring(0, index) + '<span class="cursor">&nbsp;</span>'
-        if (index === text.length - 1) au!.style.opacity = '0'
-        setTimeout(() => eraseText(text, index - 1), 15)
-      } else {
-        quoteIndex.current = (quoteIndex.current + 1) % QUOTES.length
-        setTimeout(() => typeText(QUOTES[quoteIndex.current].text, 0), 500)
-      }
-    }
-
-    const t = setTimeout(() => typeText(QUOTES[0].text, 0), 1000)
-    return () => { cancelled = true; clearTimeout(t) }
+  const handleScrambleComplete = useCallback(() => {
+    setAuthorVisible(true)
+    setTimeout(() => {
+      setAuthorVisible(false)
+      setTimeout(() => {
+        setQuoteIndex(prev => (prev + 1) % QUOTES.length)
+        setTrigger(false)
+        setTimeout(() => setTrigger(true), 50)
+      }, 500)
+    }, 4000)
   }, [])
 
   return (
@@ -111,8 +89,27 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard 
 
         {/* Quote */}
         <div className="quote-card">
-          <p ref={quoteTextRef}><span className="cursor">&nbsp;</span></p>
-          <span ref={quoteAuthorRef} style={{ color: 'var(--neon-purple)', fontFamily: 'Orbitron, sans-serif', fontSize: '0.85rem' }} />
+          <TextScramble
+            as="p"
+            trigger={trigger}
+            onScrambleComplete={handleScrambleComplete}
+            duration={1.5}
+            speed={0.03}
+            characterSet={CYBER_CHARS}
+            style={{ color: 'white', fontFamily: 'Montserrat, sans-serif', fontSize: '1rem', lineHeight: 1.7, marginBottom: '12px', minHeight: '1.7em' }}
+          >
+            {QUOTES[quoteIndex].text}
+          </TextScramble>
+          <span style={{
+            color: 'var(--neon-purple)',
+            fontFamily: 'Orbitron, sans-serif',
+            fontSize: '0.85rem',
+            opacity: authorVisible ? 1 : 0,
+            transition: 'opacity 0.5s ease',
+            display: 'block',
+          }}>
+            — {QUOTES[quoteIndex].author}
+          </span>
         </div>
 
         <div style={{ display: 'flex', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>

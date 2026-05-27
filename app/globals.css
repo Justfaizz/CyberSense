@@ -264,18 +264,13 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
 .section-label { font-size: 0.9rem; text-transform: uppercase; margin-bottom: 15px; font-weight: 600; text-shadow: 0 0 10px var(--neon-purple); }
 .section-container { margin-bottom: 40px; }
 
-/* ── Quote card / Typewriter ── */
+/* ── Quote card ── */
 .quote-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.2));
   border: 1px solid var(--glass-border); border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding: 40px; border-radius: 30px; text-align: center; margin-bottom: 40px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
-.cursor {
-  display: inline-block; width: 10px; background-color: var(--neon-blue);
-  animation: blink 1s step-end infinite; margin-left: 5px;
-}
-@keyframes blink { 50% { opacity: 0; } }
 
 /* ── Admin table ── */
 .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
