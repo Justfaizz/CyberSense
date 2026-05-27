@@ -183,7 +183,7 @@ export default function UserProfileClient({ userId, fullName, email, avatarUrl, 
             <label style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>
               Institution
             </label>
-            <input type="text" value={instVal} onChange={e => setInstVal(e.target.value)} placeholder="School or organisation" style={inputStyle} />
+            <input type="text" value={instVal} onChange={e => setInstVal(e.target.value)} placeholder="School or organisation" autoComplete="off" style={inputStyle} />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
@@ -191,7 +191,7 @@ export default function UserProfileClient({ userId, fullName, email, avatarUrl, 
               New Password <span style={{ color: '#555', fontFamily: 'sans-serif', textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
             </label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-              style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
+              autoComplete="new-password" style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
           </div>
 
           <div style={{ marginBottom: '24px' }}>
@@ -199,7 +199,7 @@ export default function UserProfileClient({ userId, fullName, email, avatarUrl, 
               Confirm Password
             </label>
             <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••"
-              style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
+              autoComplete="new-password" style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>

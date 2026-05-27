@@ -193,7 +193,7 @@ export default function AdminProfileClient({ userId, fullName, email, avatarUrl,
               New Password <span style={{ color: '#555', fontFamily: 'sans-serif', textTransform: 'none', letterSpacing: 0 }}>(leave blank to keep current)</span>
             </label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-              style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
+              autoComplete="new-password" style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
           </div>
 
           <div style={{ marginBottom: '28px' }}>
@@ -201,7 +201,7 @@ export default function AdminProfileClient({ userId, fullName, email, avatarUrl,
               Confirm Password
             </label>
             <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="••••••••"
-              style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
+              autoComplete="new-password" style={{ ...inputStyle, fontFamily: 'sans-serif' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
