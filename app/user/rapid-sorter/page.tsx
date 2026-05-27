@@ -4,13 +4,10 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-const SCENARIOS = [
-  { text: "Anonymous Comment: 'Go k1ll yourself, nobody likes you.'", isThreat: true },
-  { text: "WhatsApp Group: 'Hey guys, are we still meeting at the library for the group study today?'", isThreat: false },
-  { text: "DM: 'I have private photos of you. Send me RM500 via crypto or I am posting them to Twitter.'", isThreat: true },
-  { text: "Email from University Library: 'Reminder: Your borrowed textbook is due tomorrow.'", isThreat: false },
-  { text: "Text: 'OMG look at what Sarah just posted about you on TikTok! Click here to see: [fake-link.com]'", isThreat: true },
-]
+interface SorterScenario {
+  text: string
+  isThreat: boolean
+}
 
 const TIMER_MS = 7000
 
@@ -19,6 +16,8 @@ function RapidSorterInner() {
   const router = useRouter()
   const moduleId = parseInt(searchParams.get('module_id') ?? '2')
 
+  const [scenarios, setScenarios]   = useState<SorterScenario[]>([])
+  const [loading, setLoading]       = useState(true)
   const [round, setRound]           = useState(0)
   const [score, setScore]           = useState(0)
   const [timeLeft, setTimeLeft]     = useState(TIMER_MS)
@@ -32,15 +31,34 @@ function RapidSorterInner() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const roundRef = useRef(round)
   const scoreRef = useRef(score)
+  const scenariosRef = useRef<SorterScenario[]>([])
 
   roundRef.current = round
   scoreRef.current = score
 
-  useEffect(() => { startRound(0, 0) }, [])  // eslint-disable-line
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('scenarios_sorter')
+      .select('*')
+      .eq('module_id', moduleId)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return
+        const mapped: SorterScenario[] = data.map(row => ({
+          text: row.scenario_text,
+          isThreat: row.is_threat,
+        }))
+        scenariosRef.current = mapped
+        setScenarios(mapped)
+        setLoading(false)
+        startRound(0, 0, mapped)
+      })
+  }, [moduleId]) // eslint-disable-line
 
-  function startRound(r: number, s: number) {
-    if (r >= SCENARIOS.length) { endGame(s); return }
-    setCardText(`INCOMING DATA:\n\n"${SCENARIOS[r].text}"`)
+  function startRound(r: number, s: number, scenariosList?: SorterScenario[]) {
+    const list = scenariosList ?? scenariosRef.current
+    if (r >= list.length) { endGame(s, list); return }
+    setCardText(`INCOMING DATA:\n\n"${list[r].text}"`)
     setCardColor('var(--neon-purple)')
     setTimeLeft(TIMER_MS)
     setShowBtns(true)
@@ -52,14 +70,15 @@ function RapidSorterInner() {
       setTimeLeft(remaining)
       if (remaining <= 0) {
         clearInterval(timerRef.current!)
-        handleTimeout(r, s)
+        handleTimeout(roundRef.current, scoreRef.current)
       }
     }, 50)
   }
 
   function handleChoice(userSaysThreat: boolean) {
     if (timerRef.current) clearInterval(timerRef.current)
-    const actual = SCENARIOS[roundRef.current].isThreat
+    const list = scenariosRef.current
+    const actual = list[roundRef.current].isThreat
     const correct = userSaysThreat === actual
     const newScore = correct ? scoreRef.current + 1 : scoreRef.current
     setScore(newScore)
@@ -86,17 +105,17 @@ function RapidSorterInner() {
     setTimeout(() => startRound(nextRound, s), 1500)
   }
 
-  async function endGame(finalScore: number) {
+  async function endGame(finalScore: number, list: SorterScenario[]) {
     setFinished(true)
     setShowBtns(false)
-    const pct = (finalScore / SCENARIOS.length) * 100
+    const pct = (finalScore / list.length) * 100
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       await supabase.from('user_scores').insert({
         user_id: user.id, module_id: moduleId,
-        score: finalScore, total_questions: SCENARIOS.length,
+        score: finalScore, total_questions: list.length,
         percentage: pct, passed: pct === 100,
       })
       setSaveStatus('✓ Uploaded to HQ.')
@@ -107,7 +126,15 @@ function RapidSorterInner() {
     }
   }
 
-  const pct = (score / SCENARIOS.length) * 100
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: 'var(--neon-purple)', fontFamily: 'Orbitron', fontSize: '1.2rem' }}>
+        LOADING SIMULATION...
+      </div>
+    )
+  }
+
+  const pct = scenarios.length ? (score / scenarios.length) * 100 : 0
   const timerPct = (timeLeft / TIMER_MS) * 100
 
   return (
@@ -127,7 +154,7 @@ function RapidSorterInner() {
         <i className="fa-solid fa-arrow-left" /> ABORT SIMULATION
       </a>
       <div style={{ position: 'absolute', top: '30px', right: '40px', fontFamily: 'Orbitron', fontSize: '1.5rem', color: 'var(--neon-blue)' }}>
-        SCORE: {score}/{SCENARIOS.length}
+        SCORE: {score}/{scenarios.length}
       </div>
 
       {/* Achievement */}

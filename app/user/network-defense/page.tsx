@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -10,27 +10,6 @@ interface Challenge {
   correctTool: string
   feedback: string
 }
-
-const CHALLENGES: Challenge[] = [
-  {
-    threat: 'A stranger is sending harassing DMs on Instagram.',
-    correctNode: 'ig',
-    correctTool: 'block',
-    feedback: 'Correct! Use Block & Report on Instagram to stop the harasser.',
-  },
-  {
-    threat: 'Someone is trying to brute-force your WhatsApp account.',
-    correctNode: 'wa',
-    correctTool: 'mfa',
-    feedback: 'Correct! Enable 2FA/MFA on your WhatsApp to prevent unauthorized access.',
-  },
-  {
-    threat: 'Your campus email appears in a data breach. Strangers can find your profile.',
-    correctNode: 'email',
-    correctTool: 'privacy',
-    feedback: 'Correct! Adjust Privacy Settings to limit exposure of your email data.',
-  },
-]
 
 const NODES = [
   { id: 'ig',    icon: 'fa-brands fa-instagram', label: 'Instagram Profile' },
@@ -49,6 +28,8 @@ function NetworkDefenseInner() {
   const router = useRouter()
   const moduleId = parseInt(searchParams.get('module_id') ?? '3')
 
+  const [challenges, setChallenges] = useState<Challenge[]>([])
+  const [loading, setLoading]       = useState(true)
   const [round, setRound]           = useState(0)
   const [score, setScore]           = useState(0)
   const [selectedTool, setTool]     = useState<string | null>(null)
@@ -58,10 +39,29 @@ function NetworkDefenseInner() {
   const [showAchieve, setAchieve]   = useState(false)
   const [nodeHighlight, setNodeHL]  = useState<string | null>(null)
 
-  const current = CHALLENGES[round]
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('scenarios_defense')
+      .select('*')
+      .eq('module_id', moduleId)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return
+        const mapped: Challenge[] = data.map(row => ({
+          threat: row.threat_text,
+          correctNode: row.correct_node,
+          correctTool: row.correct_tool,
+          feedback: row.feedback_text,
+        }))
+        setChallenges(mapped)
+        setLoading(false)
+      })
+  }, [moduleId])
+
+  const current = challenges[round]
 
   async function handleNodeDrop(nodeId: string) {
-    if (!selectedTool || feedback) return
+    if (!selectedTool || feedback || !current) return
     setNodeHL(nodeId)
 
     const isCorrect = nodeId === current.correctNode && selectedTool === current.correctTool
@@ -82,16 +82,16 @@ function NetworkDefenseInner() {
     setNodeHL(null)
     const nextRound = round + 1
 
-    if (nextRound >= CHALLENGES.length) {
+    if (nextRound >= challenges.length) {
       setFinished(true)
-      const pct = ((score + (feedback?.correct ? 1 : 0)) / CHALLENGES.length) * 100
+      const pct = ((score + (feedback?.correct ? 1 : 0)) / challenges.length) * 100
 
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         await supabase.from('user_scores').insert({
           user_id: user.id, module_id: moduleId,
-          score, total_questions: CHALLENGES.length,
+          score, total_questions: challenges.length,
           percentage: pct, passed: pct === 100,
         })
         setSaveStatus('✓ Uploaded to HQ.')
@@ -105,7 +105,15 @@ function NetworkDefenseInner() {
     }
   }
 
-  const finalPct = Math.round((score / CHALLENGES.length) * 100)
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: 'var(--neon-green)', fontFamily: 'Orbitron', fontSize: '1.2rem' }}>
+        LOADING SIMULATION...
+      </div>
+    )
+  }
+
+  const finalPct = Math.round((score / challenges.length) * 100)
 
   return (
     <>
@@ -127,7 +135,7 @@ function NetworkDefenseInner() {
         <i className="fa-solid fa-arrow-left" /> ABORT MISSION
       </a>
       <div style={{ position: 'absolute', top: '30px', right: '40px', fontFamily: 'Orbitron', fontSize: '1.5rem', color: 'var(--neon-green)' }}>
-        SCORE: {score}/{CHALLENGES.length}
+        SCORE: {score}/{challenges.length}
       </div>
 
       {/* Achievement */}
@@ -136,7 +144,7 @@ function NetworkDefenseInner() {
         <div className="badge-card unlocked popup-badge" style={{ borderColor: '#00e676', boxShadow: '0 0 30px rgba(0,230,118,0.35)' }}>
           <i className="fa-solid fa-network-wired badge-icon badge-glow" style={{ color: '#00e676' }} />
           <span className="badge-name">Node Defender</span>
-          <span className="badge-module">Social Node Defense</span>
+          <span className="badge-module">Network Defense</span>
         </div>
         <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>
@@ -145,7 +153,7 @@ function NetworkDefenseInner() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h2 style={{ fontFamily: 'Orbitron', color: 'var(--neon-green)', marginBottom: '10px' }}>SOCIAL NODE DEFENSE</h2>
-            <div className="threat-alert">THREAT: {current.threat}</div>
+            <div className="threat-alert">THREAT: {current?.threat}</div>
           </div>
 
           <p style={{ color: 'var(--text-muted)', marginBottom: '20px', fontFamily: 'Orbitron', fontSize: '0.8rem' }}>
@@ -184,7 +192,7 @@ function NetworkDefenseInner() {
               <i className={`fa-solid ${feedback.correct ? 'fa-check-circle' : 'fa-times-circle'}`} style={{ fontSize: '3rem', color: feedback.correct ? '#00ff66' : '#ff003c', marginBottom: '15px', display: 'block' }} />
               <p style={{ color: 'white', lineHeight: 1.5, marginBottom: '25px' }}>{feedback.text}</p>
               <button className="login-btn" onClick={handleNext} style={{ border: 'none', cursor: 'pointer' }}>
-                {round + 1 >= CHALLENGES.length ? 'VIEW SCORE' : 'NEXT THREAT'}
+                {round + 1 >= challenges.length ? 'VIEW SCORE' : 'NEXT THREAT'}
               </button>
             </div>
           )}

@@ -175,7 +175,7 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
                   {leaderboard.map((entry, i) => {
                     const medals = ['🥇', '🥈', '🥉']
                     const rank = medals[i] ?? `${i + 1}`
-                    const shields = Array.from({ length: 3 }, (_, idx) =>
+                    const shields = Array.from({ length: 6 }, (_, idx) =>
                       idx < entry.modulesCompleted
                         ? <i key={idx} className="fa-solid fa-shield-halved" style={{ color: 'var(--neon-blue)', fontSize: '0.75rem' }} />
                         : <i key={idx} className="fa-solid fa-shield-halved" style={{ color: '#333', fontSize: '0.75rem' }} />
@@ -185,7 +185,7 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
                         <span>{rank} {entry.full_name}</span>
                         <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                           {shields}
-                          <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.78rem', marginLeft: '6px' }}>{entry.modulesCompleted}/3</span>
+                          <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.78rem', marginLeft: '6px' }}>{entry.modulesCompleted}/6</span>
                         </span>
                       </li>
                     )
@@ -193,7 +193,7 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
                 </ul>
                 <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--neon-purple)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.75rem' }}>
                   <span>▶ YOU: #{currentUserRank}</span>
-                  <span>{currentUserModules}/3 modules</span>
+                  <span>{currentUserModules}/6 modules</span>
                 </div>
               </>
             )}

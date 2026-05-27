@@ -16,54 +16,13 @@ interface Scenario {
   choices: Choice[]
 }
 
-const SCENARIOS: Scenario[] = [
-  {
-    sender: 'AnonymousHater99',
-    message: "You're so pathetic. Everyone in your batch is laughing at your presentation today. Delete your account before I leak your embarrassing photos.",
-    choices: [
-      { text: '1. Reply angrily and demand to know who they are.', isCorrect: false, feedbackTitle: "<span style='color:#ff003c;'>ESCALATION</span>", feedbackBody: "Engaging with cyberbullies gives them exactly what they want: a reaction. It usually escalates the harassment." },
-      { text: '2. Do not reply. Take a screenshot, and block the account.', isCorrect: true, feedbackTitle: "<span style='color:#00ff66;'>CORRECT PROTOCOL</span>", feedbackBody: "Perfect. Documenting evidence and cutting off communication removes the bully's power immediately." },
-    ],
-  },
-  {
-    sender: 'BestFriend (New Number)',
-    message: "Hey! I got locked out of my main IG. Can you send me the verification code that just went to your phone so I can get back in?",
-    choices: [
-      { text: '1. Send the code. They are my best friend.', isCorrect: false, feedbackTitle: "<span style='color:#ff003c;'>ACCOUNT HIJACKED</span>", feedbackBody: 'This is an impersonation attack. By sending the code, you just allowed a hacker to bypass 2FA and hijack YOUR account.' },
-      { text: '2. Call your friend directly on their normal number to verify.', isCorrect: true, feedbackTitle: "<span style='color:#00ff66;'>THREAT EVADED</span>", feedbackBody: 'Excellent. Always verify out-of-band when someone asks for sensitive security codes.' },
-    ],
-  },
-  {
-    sender: 'Gossip Channel',
-    message: 'OMG! Is this a video of YOU at the campus party last night?? 😱 Look: <span style="color:#ff003c;text-decoration:underline;">http://campus-gossip-leaks.com/video49</span>',
-    choices: [
-      { text: '1. Click the link to see what the video is about.', isCorrect: false, feedbackTitle: "<span style='color:#ff003c;'>MALWARE INFECTION</span>", feedbackBody: "Cyberbullies often use 'spilled tea' or fake gossip links to phish credentials or drop malware onto your device." },
-      { text: '2. Ignore the link and report the channel for bullying.', isCorrect: true, feedbackTitle: "<span style='color:#00ff66;'>SAFE</span>", feedbackBody: 'Great decision. You avoided a phishing trap disguised as social drama.' },
-    ],
-  },
-  {
-    sender: 'Unknown Contact',
-    message: 'I know where you live. I have your address and I am going to post it publicly online unless you send RM500 to my crypto wallet.',
-    choices: [
-      { text: '1. Do not reply, save the evidence, and report to authorities/police.', isCorrect: true, feedbackTitle: "<span style='color:#00ff66;'>CRISIS AVERTED</span>", feedbackBody: 'This is a severe Doxxing and Blackmail threat. Always involve the authorities rather than paying scammers.' },
-      { text: '2. Pay the RM500 so they don\'t post your address.', isCorrect: false, feedbackTitle: "<span style='color:#ff003c;'>EXTORTION FAILED</span>", feedbackBody: "Paying extortionists never guarantees they will delete the data. It only marks you as a willing target for future attacks." },
-    ],
-  },
-  {
-    sender: 'Library Wifi (Admin)',
-    message: 'Your browsing history violates university policy. We will notify your faculty dean unless you click here to verify your identity.',
-    choices: [
-      { text: "1. Click to verify. I don't want to get in trouble.", isCorrect: false, feedbackTitle: "<span style='color:#ff003c;'>PHISHED</span>", feedbackBody: 'This is a fear-based social engineering attack. Official networks will never threaten you via text message to verify identity.' },
-      { text: '2. Delete the message. It is a fear-based scam.', isCorrect: true, feedbackTitle: "<span style='color:#00ff66;'>THREAT NEUTRALIZED</span>", feedbackBody: "Spot on. Scammers use authority and fear to bypass your critical thinking." },
-    ],
-  },
-]
-
 function ChatSimulatorInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const moduleId = parseInt(searchParams.get('module_id') ?? '1')
 
+  const [scenarios, setScenarios]   = useState<Scenario[]>([])
+  const [loading, setLoading]       = useState(true)
   const [currentQ, setCurrentQ]     = useState(0)
   const [score, setScore]           = useState(0)
   const [showFeedback, setFeedback] = useState(false)
@@ -75,14 +34,45 @@ function ChatSimulatorInner() {
   const [showAchievement, setAchievement] = useState(false)
   const [messages, setMessages]     = useState<{ type: 'npc'|'player'|'divider'; html: string }[]>([])
   const chatRef = useRef<HTMLDivElement>(null)
+  const scenariosRef = useRef<Scenario[]>([])
 
   useEffect(() => {
-    loadQuestion(0, [])
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    const supabase = createClient()
+    supabase
+      .from('scenarios')
+      .select('*')
+      .eq('module_id', moduleId)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return
+        const mapped: Scenario[] = data.map(row => ({
+          sender: row.sender_name,
+          message: row.message_text,
+          choices: [
+            {
+              text: row.choice_1_text,
+              isCorrect: row.choice_1_correct,
+              feedbackTitle: row.choice_1_title,
+              feedbackBody: row.choice_1_body,
+            },
+            {
+              text: row.choice_2_text,
+              isCorrect: row.choice_2_correct,
+              feedbackTitle: row.choice_2_title,
+              feedbackBody: row.choice_2_body,
+            },
+          ],
+        }))
+        scenariosRef.current = mapped
+        setScenarios(mapped)
+        setLoading(false)
+        loadQuestion(0, [], mapped)
+      })
+  }, [moduleId]) // eslint-disable-line
 
-  function loadQuestion(index: number, prevMessages: typeof messages) {
-    const s = SCENARIOS[index]
+  function loadQuestion(index: number, prevMessages: typeof messages, scenariosList?: Scenario[]) {
+    const list = scenariosList ?? scenariosRef.current
+    const s = list[index]
+    if (!s) return
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     setMessages([
       ...prevMessages,
@@ -93,6 +83,7 @@ function ChatSimulatorInner() {
   }
 
   async function handleChoice(choice: Choice, index: number) {
+    const list = scenariosRef.current
     const newScore = choice.isCorrect ? score + 1 : score
     const newMessages: typeof messages = [
       ...messages,
@@ -103,12 +94,11 @@ function ChatSimulatorInner() {
 
     setTimeout(async () => {
       setFeedbackData({ title: choice.feedbackTitle, body: choice.feedbackBody })
-      setIsLast(index >= SCENARIOS.length - 1)
+      setIsLast(index >= list.length - 1)
       setFeedback(true)
 
-      if (index >= SCENARIOS.length - 1) {
-        // Final question handled in "View Score" button
-        const pct = (newScore / SCENARIOS.length) * 100
+      if (index >= list.length - 1) {
+        const pct = (newScore / list.length) * 100
         setFinalPct(pct)
 
         const supabase = createClient()
@@ -116,7 +106,7 @@ function ChatSimulatorInner() {
         if (user) {
           await supabase.from('user_scores').insert({
             user_id: user.id, module_id: moduleId,
-            score: newScore, total_questions: SCENARIOS.length,
+            score: newScore, total_questions: list.length,
             percentage: pct, passed: pct === 100,
           })
           setSaveStatus('✓ Uploaded to HQ.')
@@ -143,7 +133,15 @@ function ChatSimulatorInner() {
     }
   }
 
-  const current = SCENARIOS[currentQ]
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '1.2rem' }}>
+        LOADING SIMULATION...
+      </div>
+    )
+  }
+
+  const current = scenarios[currentQ]
 
   return (
     <>
@@ -166,7 +164,7 @@ function ChatSimulatorInner() {
         <h1 style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron' }}>
           <i className="fa-solid fa-shield-halved" /> SIMULATION ACTIVE
         </h1>
-        <p style={{ color: 'var(--text-muted)' }}>Question {currentQ + 1} of {SCENARIOS.length}</p>
+        <p style={{ color: 'var(--text-muted)' }}>Question {currentQ + 1} of {scenarios.length}</p>
       </div>
 
       {/* Achievement */}
@@ -175,7 +173,7 @@ function ChatSimulatorInner() {
         <div className="badge-card unlocked popup-badge" style={{ borderColor: '#00f0ff', boxShadow: '0 0 30px rgba(0,240,255,0.35)' }}>
           <i className="fa-solid fa-shield-halved badge-icon badge-glow" style={{ color: '#00f0ff' }} />
           <span className="badge-name">Digital Guardian</span>
-          <span className="badge-module">Harassment Simulator</span>
+          <span className="badge-module">Chat Simulator</span>
         </div>
         <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>
@@ -184,7 +182,7 @@ function ChatSimulatorInner() {
         <div className="phone-header">
           <i className="fa-solid fa-chevron-left" style={{ color: '#00f0ff', cursor: 'pointer' }} onClick={() => router.push('/user/learning')} />
           <div style={{ color: 'white', fontWeight: 600 }}>
-            <i className="fa-solid fa-user-circle" /> {current.sender}
+            <i className="fa-solid fa-user-circle" /> {current?.sender}
           </div>
           <i className="fa-solid fa-circle-info" style={{ color: '#666' }} />
         </div>
@@ -196,7 +194,7 @@ function ChatSimulatorInner() {
         </div>
 
         <div className="controls">
-          {!showFeedback && !finished && current.choices.map((c, i) => (
+          {!showFeedback && !finished && current?.choices.map((c, i) => (
             <button key={i} className="choice-btn" onClick={() => handleChoice(c, currentQ)}>{c.text}</button>
           ))}
         </div>
