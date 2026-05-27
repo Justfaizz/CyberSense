@@ -14,23 +14,22 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options as Record<string, unknown>)
           )
         },
       },
     }
   )
 
-  // IMPORTANT: Always call getUser() to refresh the session cookie
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // ── Protect /user and /admin routes ──────────────────────────────────
+  // Protect /user and /admin routes
   if (!user && (pathname.startsWith('/user') || pathname.startsWith('/admin'))) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // ── Admin-only guard ──────────────────────────────────────────────────
+  // Admin-only guard
   if (user && pathname.startsWith('/admin')) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -43,7 +42,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // ── Redirect logged-in users away from login/register ────────────────
+  // Redirect logged-in users away from login/register
   if (user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -63,4 +62,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_ne
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}
