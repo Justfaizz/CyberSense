@@ -150,6 +150,101 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   border-color: var(--neon-blue);
 }
 
+/* ── Loading Screen ── */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-deep);
+  background-image:
+    linear-gradient(rgba(196, 144, 228, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196, 144, 228, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at center, #3a154a 0%, var(--bg-deep) 70%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  z-index: 9999;
+  gap: 32px;
+  animation: none;
+}
+
+.loading-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 10px #fff, 0 0 20px var(--neon-purple), 0 0 40px var(--neon-blue);
+  animation: pulsate 2s infinite alternate;
+}
+
+.loading-spinner-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  animation: spinRing 1.2s linear infinite;
+}
+
+.loading-ring:nth-child(1) {
+  border-top-color: var(--neon-blue);
+  box-shadow: 0 0 15px var(--neon-blue), inset 0 0 8px rgba(0, 240, 255, 0.2);
+}
+
+.loading-ring:nth-child(2) {
+  inset: 10px;
+  border-right-color: var(--neon-purple);
+  box-shadow: 0 0 12px var(--neon-purple);
+  animation-duration: 0.85s;
+  animation-direction: reverse;
+}
+
+.loading-ring:nth-child(3) {
+  inset: 20px;
+  border-bottom-color: var(--neon-green);
+  box-shadow: 0 0 10px var(--neon-green);
+  animation-duration: 1.6s;
+}
+
+@keyframes spinRing {
+  to { transform: rotate(360deg); }
+}
+
+.loading-status {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 4px;
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px var(--neon-blue);
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.loading-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.loading-dots span {
+  opacity: 0;
+  animation: blinkDot 1.4s infinite;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blinkDot {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
 /* ── Progress Bars ── */
 .progress-wrapper { width: 100%; margin-bottom: 30px; }
 .progress-track {
