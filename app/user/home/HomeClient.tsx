@@ -238,6 +238,8 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
                         <img
                           src={`https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg`}
                           alt={v.title}
+                          loading="lazy"
+                          decoding="async"
                           style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }}
                         />
                         <div style={{

@@ -1,13 +1,16 @@
+import dynamic from "next/dynamic";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
-import StatsStrip from "@/components/landing/StatsStrip";
-import AwarenessSection from "@/components/landing/AwarenessSection";
-import FeaturesSection from "@/components/landing/FeaturesSection";
-import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import AudienceSection from "@/components/landing/AudienceSection";
-import CTASection from "@/components/landing/CTASection";
-import LandingFooter from "@/components/landing/LandingFooter";
 import "./landing.css";
+
+// Below-fold sections loaded lazily — they don't block the initial render
+const StatsStrip = dynamic(() => import("@/components/landing/StatsStrip"));
+const AwarenessSection = dynamic(() => import("@/components/landing/AwarenessSection"));
+const FeaturesSection = dynamic(() => import("@/components/landing/FeaturesSection"));
+const TestimonialsSection = dynamic(() => import("@/components/landing/TestimonialsSection"));
+const AudienceSection = dynamic(() => import("@/components/landing/AudienceSection"));
+const CTASection = dynamic(() => import("@/components/landing/CTASection"));
+const LandingFooter = dynamic(() => import("@/components/landing/LandingFooter"));
 
 export const metadata = {
   title: "CyberSense — Gamified Cyberbullying Awareness Training",

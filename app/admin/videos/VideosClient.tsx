@@ -227,6 +227,8 @@ export default function VideosClient({ initialVideos }: Props) {
                       <img
                         src={`https://img.youtube.com/vi/${v.youtube_id}/default.jpg`}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         style={{ width: '64px', height: '48px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
                       />
                       <div>

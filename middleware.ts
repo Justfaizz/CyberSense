@@ -24,36 +24,33 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // Protect /user and /admin routes
+  // Protect /user and /admin routes — redirect unauthenticated users immediately
   if (!user && (pathname.startsWith('/user') || pathname.startsWith('/admin'))) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Admin-only guard
-  if (user && pathname.startsWith('/admin')) {
+  // For routes that need role info, fetch the profile once
+  const needsRole =
+    (user && pathname.startsWith('/admin')) ||
+    (user && (pathname === '/login' || pathname === '/register' || pathname === '/'))
+
+  if (needsRole) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', user!.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    const role = profile?.role
+
+    if (pathname.startsWith('/admin') && role !== 'admin') {
       return NextResponse.redirect(new URL('/user/home', request.url))
     }
-  }
 
-  // Redirect logged-in users away from login/register
-  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role === 'admin') {
-      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-    } else {
-      return NextResponse.redirect(new URL('/user/home', request.url))
+    if (pathname === '/login' || pathname === '/register' || pathname === '/') {
+      return NextResponse.redirect(
+        new URL(role === 'admin' ? '/admin/dashboard' : '/user/home', request.url)
+      )
     }
   }
 
