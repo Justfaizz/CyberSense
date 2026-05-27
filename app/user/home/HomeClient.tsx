@@ -10,10 +10,9 @@ interface Props {
   userName: string
   passedIds: number[]
   progress: number
-  leaderboard: { full_name: string; points: number; badgeCount: number }[]
+  leaderboard: { full_name: string; modulesCompleted: number }[]
   currentUserRank: number
-  currentUserPoints: number
-  currentUserBadges: number
+  currentUserModules: number
   latestVideos: Video[]
 }
 
@@ -47,7 +46,7 @@ const QUOTES = [
 
 const CYBER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*<>[]{}|/\\'
 
-export default function HomeClient({ userName, passedIds, progress, leaderboard, currentUserRank, currentUserPoints, currentUserBadges, latestVideos }: Props) {
+export default function HomeClient({ userName, passedIds, progress, leaderboard, currentUserRank, currentUserModules, latestVideos }: Props) {
   const router = useRouter()
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [trigger, setTrigger] = useState(true)
@@ -176,12 +175,17 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
                   {leaderboard.map((entry, i) => {
                     const medals = ['🥇', '🥈', '🥉']
                     const rank = medals[i] ?? `${i + 1}`
+                    const shields = Array.from({ length: 3 }, (_, idx) =>
+                      idx < entry.modulesCompleted
+                        ? <i key={idx} className="fa-solid fa-shield-halved" style={{ color: 'var(--neon-blue)', fontSize: '0.75rem' }} />
+                        : <i key={idx} className="fa-solid fa-shield-halved" style={{ color: '#333', fontSize: '0.75rem' }} />
+                    )
                     return (
                       <li key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px dashed #222', fontSize: '0.88rem' }}>
                         <span>{rank} {entry.full_name}</span>
-                        <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.8rem' }}>{entry.points} pts</span>
-                          <span style={{ color: 'var(--neon-purple)', fontSize: '0.78rem' }}>🛡×{entry.badgeCount}</span>
+                        <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          {shields}
+                          <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.78rem', marginLeft: '6px' }}>{entry.modulesCompleted}/3</span>
                         </span>
                       </li>
                     )
@@ -189,7 +193,7 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
                 </ul>
                 <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--neon-purple)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.75rem' }}>
                   <span>▶ YOU: #{currentUserRank}</span>
-                  <span>{currentUserPoints} pts · {currentUserBadges} badge{currentUserBadges !== 1 ? 's' : ''}</span>
+                  <span>{currentUserModules}/3 modules</span>
                 </div>
               </>
             )}
