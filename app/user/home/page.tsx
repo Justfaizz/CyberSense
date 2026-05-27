@@ -20,9 +20,9 @@ export default async function HomePage() {
     supabase.from('user_scores').select('module_id').eq('user_id', user.id).eq('passed', true),
     supabase
       .from('user_scores')
-      .select('user_id, profiles!inner(full_name)')
-      .eq('percentage', 100)
-      .limit(50),
+      .select('user_id, module_id, passed, completed_at, profiles!inner(full_name)')
+      .order('completed_at', { ascending: true })
+      .limit(1000),
     supabase
       .from('videos')
       .select('*')
@@ -34,14 +34,34 @@ export default async function HomePage() {
   const passedIds = [...new Set((passedRows ?? []).map(r => r.module_id))]
   const progress = totalModules ? Math.round((passedIds.length / totalModules) * 100) : 0
 
-  // Aggregate leaderboard in JS
-  const lbMap: Record<string, { full_name: string; count: number }> = {}
+  // Point-based leaderboard aggregation
+  const userPoints: Record<string, { full_name: string; points: number; badgeCount: number; firstPasses: Set<number> }> = {}
   for (const row of leaderboard ?? []) {
-    const p = row.profiles as unknown as { full_name: string }
-    if (!lbMap[row.user_id]) lbMap[row.user_id] = { full_name: p.full_name, count: 0 }
-    lbMap[row.user_id].count++
+    const profiles = row.profiles as unknown as { full_name: string } | { full_name: string }[]
+    const name = Array.isArray(profiles) ? profiles[0]?.full_name : profiles?.full_name
+    if (!name) continue
+    if (!userPoints[row.user_id]) userPoints[row.user_id] = { full_name: name, points: 0, badgeCount: 0, firstPasses: new Set() }
+    const u = userPoints[row.user_id]
+    u.points += 5
+    if (row.passed) {
+      u.points += 25
+      if (!u.firstPasses.has(row.module_id)) {
+        u.firstPasses.add(row.module_id)
+        u.points += 20
+        u.badgeCount++
+      }
+    }
   }
-  const lbSorted = Object.values(lbMap).sort((a, b) => b.count - a.count).slice(0, 5)
+
+  const allRanked = Object.entries(userPoints)
+    .map(([uid, d]) => ({ uid, full_name: d.full_name, points: d.points, badgeCount: d.badgeCount }))
+    .sort((a, b) => b.points - a.points)
+
+  const lbSorted = allRanked.slice(0, 10)
+  const currentUserRankIdx = allRanked.findIndex(u => u.uid === user.id)
+  const currentUserRank   = currentUserRankIdx >= 0 ? currentUserRankIdx + 1 : allRanked.length + 1
+  const currentUserPoints = userPoints[user.id]?.points ?? 0
+  const currentUserBadges = userPoints[user.id]?.badgeCount ?? 0
 
   return (
     <HomeClient
@@ -49,6 +69,9 @@ export default async function HomePage() {
       passedIds={passedIds}
       progress={progress}
       leaderboard={lbSorted}
+      currentUserRank={currentUserRank}
+      currentUserPoints={currentUserPoints}
+      currentUserBadges={currentUserBadges}
       latestVideos={latestVideos ?? []}
     />
   )

@@ -98,7 +98,7 @@ function NetworkDefenseInner() {
       }
 
       if (pct === 100) {
-        setTimeout(() => { setAchieve(true); setTimeout(() => setAchieve(false), 3000) }, 500)
+        setTimeout(() => { setAchieve(true); setTimeout(() => setAchieve(false), 4000) }, 500)
       }
     } else {
       setRound(nextRound)
@@ -131,10 +131,14 @@ function NetworkDefenseInner() {
       </div>
 
       {/* Achievement */}
-      <div className={`achievement-popup${showAchieve ? ' show' : ''}`} style={{ border: '2px solid var(--neon-green)', boxShadow: '0 0 50px rgba(0,230,118,0.6)' }}>
-        <i className="fa-solid fa-star" style={{ color: 'var(--neon-green)', textShadow: '0 0 30px var(--neon-green)' }} />
-        <h2 style={{ fontFamily: 'Orbitron', color: 'white', letterSpacing: '2px' }}>LEVEL CLEARED!</h2>
-        <p style={{ color: 'var(--neon-green)', marginTop: '10px', fontWeight: 'bold', fontFamily: 'Montserrat' }}>New Achievement Badge Unlocked</p>
+      <div className={`achievement-popup${showAchieve ? ' show' : ''}`}>
+        <p className="popup-headline">🏆 ACHIEVEMENT UNLOCKED</p>
+        <div className="badge-card unlocked popup-badge" style={{ borderColor: '#00e676', boxShadow: '0 0 30px rgba(0,230,118,0.35)' }}>
+          <i className="fa-solid fa-network-wired badge-icon badge-glow" style={{ color: '#00e676' }} />
+          <span className="badge-name">Node Defender</span>
+          <span className="badge-module">Social Node Defense</span>
+        </div>
+        <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>
 
       {!finished ? (

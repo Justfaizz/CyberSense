@@ -334,3 +334,150 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   pointer-events: none; transform: translate(-50%, -50%); z-index: 0;
   transition: left 0.1s ease-out, top 0.1s ease-out;
 }
+
+/* ── Badge Achievement Cards ── */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.badge-card {
+  border: 2px dashed #333;
+  border-radius: 20px;
+  padding: 25px 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.badge-card.unlocked { border-style: solid; }
+.badge-card.locked { opacity: 0.45; }
+
+.badge-card .badge-icon {
+  font-size: 2.8rem;
+  margin-bottom: 8px;
+}
+
+.badge-card.unlocked .badge-icon {
+  animation: spinBadge 0.8s ease-out forwards;
+}
+
+.badge-card.locked .badge-icon {
+  filter: grayscale(100%);
+  opacity: 0.3;
+}
+
+.badge-glow { animation: badgePulse 2.5s ease-in-out infinite; }
+
+@keyframes badgePulse {
+  0%, 100% { filter: drop-shadow(0 0 5px currentColor); }
+  50%       { filter: drop-shadow(0 0 16px currentColor); }
+}
+
+.badge-card .badge-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 1px;
+}
+
+.badge-card .badge-module {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.badge-card .badge-status {
+  font-size: 0.7rem;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 4px;
+}
+
+.badge-card.unlocked .badge-status { color: #00ff66; }
+.badge-card.locked .badge-status { color: #555; }
+
+/* Achievement popup — badge card variant */
+.achievement-popup .popup-headline {
+  font-family: 'Orbitron', sans-serif;
+  color: #ffd700;
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+}
+
+.achievement-popup .popup-badge {
+  border-style: solid;
+  min-width: 190px;
+}
+
+.achievement-popup .popup-badge .badge-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+    height: auto;
+    width: 100vw;
+    margin: 0;
+    gap: 0;
+    border-radius: 0;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    gap: 12px;
+  }
+
+  .sidebar-header { margin-bottom: 0; }
+  .sidebar-header h2 { font-size: 0.9rem; }
+
+  .nav-menu {
+    flex-direction: row;
+    flex-grow: 1;
+    overflow-x: auto;
+    gap: 6px;
+    margin-top: 0;
+    scrollbar-width: none;
+  }
+  .nav-menu::-webkit-scrollbar { display: none; }
+
+  .nav-item { padding: 8px 10px; border-radius: 10px; }
+  .nav-item span { display: none; }
+  .nav-section-title { display: none; }
+  .sidebar-footer { display: none; }
+
+  .main-content {
+    padding: 20px;
+    border-radius: 0;
+  }
+
+  .module-card { min-width: 100% !important; }
+
+  .glass-card { min-width: unset !important; }
+
+  .admin-table { font-size: 0.75rem; }
+  .admin-table th, .admin-table td { padding: 8px 10px; }
+
+  .badge-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  .achievement-popup { width: 90vw; padding: 30px 20px; }
+
+  .page-title { font-size: 1.6rem; }
+}

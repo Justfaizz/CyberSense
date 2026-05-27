@@ -103,7 +103,7 @@ function RapidSorterInner() {
     }
 
     if (pct === 100) {
-      setTimeout(() => { setAchieve(true); setTimeout(() => setAchieve(false), 3000) }, 500)
+      setTimeout(() => { setAchieve(true); setTimeout(() => setAchieve(false), 4000) }, 500)
     }
   }
 
@@ -131,10 +131,14 @@ function RapidSorterInner() {
       </div>
 
       {/* Achievement */}
-      <div className={`achievement-popup${showAchieve ? ' show' : ''}`} style={{ border: '2px solid var(--neon-purple)', boxShadow: '0 0 50px rgba(196,144,228,0.6)' }}>
-        <i className="fa-solid fa-star" style={{ color: 'var(--neon-purple)', textShadow: '0 0 30px var(--neon-purple)' }} />
-        <h2 style={{ fontFamily: 'Orbitron', color: 'white', letterSpacing: '2px' }}>LEVEL CLEARED!</h2>
-        <p style={{ color: 'var(--neon-purple)', marginTop: '10px', fontWeight: 'bold', fontFamily: 'Montserrat' }}>New Achievement Badge Unlocked</p>
+      <div className={`achievement-popup${showAchieve ? ' show' : ''}`}>
+        <p className="popup-headline">🏆 ACHIEVEMENT UNLOCKED</p>
+        <div className="badge-card unlocked popup-badge" style={{ borderColor: '#c490e4', boxShadow: '0 0 30px rgba(196,144,228,0.35)' }}>
+          <i className="fa-solid fa-magnifying-glass-chart badge-icon badge-glow" style={{ color: '#c490e4' }} />
+          <span className="badge-name">Threat Analyst</span>
+          <span className="badge-module">Rapid Threat Sorter</span>
+        </div>
+        <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>
 
       <div className="sorter-container">

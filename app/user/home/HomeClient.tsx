@@ -10,7 +10,10 @@ interface Props {
   userName: string
   passedIds: number[]
   progress: number
-  leaderboard: { full_name: string; count: number }[]
+  leaderboard: { full_name: string; points: number; badgeCount: number }[]
+  currentUserRank: number
+  currentUserPoints: number
+  currentUserBadges: number
   latestVideos: Video[]
 }
 
@@ -44,7 +47,7 @@ const QUOTES = [
 
 const CYBER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*<>[]{}|/\\'
 
-export default function HomeClient({ userName, passedIds, progress, leaderboard, latestVideos }: Props) {
+export default function HomeClient({ userName, passedIds, progress, leaderboard, currentUserRank, currentUserPoints, currentUserBadges, latestVideos }: Props) {
   const router = useRouter()
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [trigger, setTrigger] = useState(true)
@@ -166,18 +169,29 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
               <i className="fa-solid fa-trophy" /> TOP DEFENDERS
             </h3>
             {leaderboard.length === 0 ? (
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>No perfect scores yet.</p>
+              <p style={{ color: '#666', fontSize: '0.9rem' }}>No scores yet.</p>
             ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'white' }}>
-                {leaderboard.map((entry, i) => (
-                  <li key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px dashed #222' }}>
-                    <span><strong>#{i + 1}</strong> {entry.full_name}</span>
-                    <span style={{ color: 'var(--neon-green)', fontFamily: 'Orbitron' }}>
-                      <i className="fa-solid fa-star" /> {entry.count}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'white' }}>
+                  {leaderboard.map((entry, i) => {
+                    const medals = ['🥇', '🥈', '🥉']
+                    const rank = medals[i] ?? `${i + 1}`
+                    return (
+                      <li key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px dashed #222', fontSize: '0.88rem' }}>
+                        <span>{rank} {entry.full_name}</span>
+                        <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.8rem' }}>{entry.points} pts</span>
+                          <span style={{ color: 'var(--neon-purple)', fontSize: '0.78rem' }}>🛡×{entry.badgeCount}</span>
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+                <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--neon-purple)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.75rem' }}>
+                  <span>▶ YOU: #{currentUserRank}</span>
+                  <span>{currentUserPoints} pts · {currentUserBadges} badge{currentUserBadges !== 1 ? 's' : ''}</span>
+                </div>
+              </>
             )}
           </div>
         </div>

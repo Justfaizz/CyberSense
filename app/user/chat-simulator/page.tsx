@@ -125,7 +125,7 @@ function ChatSimulatorInner() {
         if (pct === 100) {
           setTimeout(() => {
             setAchievement(true)
-            setTimeout(() => setAchievement(false), 3000)
+            setTimeout(() => setAchievement(false), 4000)
           }, 500)
         }
       }
@@ -171,9 +171,13 @@ function ChatSimulatorInner() {
 
       {/* Achievement */}
       <div className={`achievement-popup${showAchievement ? ' show' : ''}`}>
-        <i className="fa-solid fa-star" style={{ color: 'var(--neon-blue)', textShadow: '0 0 30px var(--neon-blue)' }} />
-        <h2 style={{ fontFamily: 'Orbitron', color: 'white', letterSpacing: '2px' }}>LEVEL CLEARED!</h2>
-        <p style={{ color: 'var(--neon-blue)', marginTop: '10px', fontWeight: 'bold', fontFamily: 'Montserrat' }}>New Achievement Badge Unlocked</p>
+        <p className="popup-headline">🏆 ACHIEVEMENT UNLOCKED</p>
+        <div className="badge-card unlocked popup-badge" style={{ borderColor: '#00f0ff', boxShadow: '0 0 30px rgba(0,240,255,0.35)' }}>
+          <i className="fa-solid fa-shield-halved badge-icon badge-glow" style={{ color: '#00f0ff' }} />
+          <span className="badge-name">Digital Guardian</span>
+          <span className="badge-module">Harassment Simulator</span>
+        </div>
+        <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>
 
       <div className="phone-container">

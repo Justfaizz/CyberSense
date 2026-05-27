@@ -13,6 +13,24 @@ export default async function ProfilePage() {
   const passedCount   = scores?.filter(s => s.passed).length ?? 0
   const avgScore      = scores?.length ? Math.round(scores.reduce((a, s) => a + s.percentage, 0) / scores.length) : 0
 
+  const BADGES = [
+    { id: 'mod1',  name: 'Digital Guardian',  module: 'Harassment Simulator', moduleId: 1, icon: 'fa-shield-halved',          color: '#00f0ff', hint: 'Complete Module 1' },
+    { id: 'mod2',  name: 'Threat Analyst',    module: 'Rapid Threat Sorter',  moduleId: 2, icon: 'fa-magnifying-glass-chart', color: '#c490e4', hint: 'Complete Module 2' },
+    { id: 'mod3',  name: 'Node Defender',     module: 'Social Node Defense',  moduleId: 3, icon: 'fa-network-wired',          color: '#00e676', hint: 'Complete Module 3' },
+    { id: 'elite', name: 'CyberSense Elite',  module: 'All Modules',          moduleId: 0, icon: 'fa-crown',                  color: '#ffd700', hint: 'Complete all modules' },
+  ]
+
+  const badgeStates = BADGES.map(b => {
+    if (b.id === 'elite') {
+      const allPassed = [1, 2, 3].every(mid => scores?.some(s => s.module_id === mid && s.passed))
+      return { ...b, unlocked: allPassed, unlockedAt: null as string | null }
+    }
+    const firstPass = scores
+      ?.filter(s => s.module_id === b.moduleId && s.passed)
+      .sort((a, x) => new Date(a.completed_at).getTime() - new Date(x.completed_at).getTime())[0]
+    return { ...b, unlocked: !!firstPass, unlockedAt: firstPass?.completed_at ?? null }
+  })
+
   async function handleLogout() {
     'use server'
     const supabase = await createClient()
@@ -81,6 +99,32 @@ export default async function ProfilePage() {
               <div key={stat.label} className="glass-card" style={{ padding: '20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: `4px solid ${stat.color}` }}>
                 <span style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600 }}>{stat.label}</span>
                 <span style={{ fontFamily: 'Orbitron', fontSize: '2rem', color: stat.color }}>{stat.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Achievements */}
+        <div className="section-container">
+          <h3 className="section-label" style={{ color: 'var(--neon-blue)' }}>ACHIEVEMENTS</h3>
+          <div className="badge-grid">
+            {badgeStates.map(b => (
+              <div
+                key={b.id}
+                className={`badge-card ${b.unlocked ? 'unlocked' : 'locked'}`}
+                style={b.unlocked ? { borderColor: b.color, boxShadow: `0 0 20px ${b.color}30` } : {}}
+              >
+                <i
+                  className={`fa-solid ${b.icon} badge-icon${b.unlocked ? ' badge-glow' : ''}`}
+                  style={{ color: b.unlocked ? b.color : '#555' }}
+                />
+                <span className="badge-name">{b.name}</span>
+                <span className="badge-module">{b.module}</span>
+                <span className="badge-status">
+                  {b.unlocked
+                    ? `◉ UNLOCKED · ${b.unlockedAt ? new Date(b.unlockedAt).toLocaleDateString('en-MY', { month: 'short', year: 'numeric' }) : ''}`
+                    : `◉ LOCKED · ${b.hint}`}
+                </span>
               </div>
             ))}
           </div>
