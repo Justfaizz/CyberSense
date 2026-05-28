@@ -57,6 +57,7 @@ export default function LoginPage() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px', height: '100vh', justifyContent: 'center' }}>
 
         <div style={{ textAlign: 'center' }}>
+          <img src="/logo.png" alt="CyberSense" style={{ height: '110px', width: 'auto', objectFit: 'contain', marginBottom: '8px' }} />
           <h1 style={{ fontSize: '2.5rem', lineHeight: 1.4 }}>
             WELCOME TO<br />
             <span className="glow-text">CYBERSENSE</span>

@@ -99,7 +99,9 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-header"><h2 className="glow-text">CYBERSENSE</h2></div>
+        <div className="sidebar-header">
+          <img src="/logo.png" alt="CyberSense" style={{ width: '140px', objectFit: 'contain' }} />
+        </div>
         <nav className="nav-menu">
           <a href="/user/home" className="nav-item active">
             <div className="icon-box"><i className="fa-solid fa-house" /></div><span>HOME</span>

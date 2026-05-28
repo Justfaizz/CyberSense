@@ -47,7 +47,9 @@ export default async function AdminDashboard() {
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
-        <div className="sidebar-header"><h2 className="glow-text">CYBERSENSE</h2></div>
+        <div className="sidebar-header">
+          <img src="/logo.png" alt="CyberSense" style={{ width: '140px', objectFit: 'contain' }} />
+        </div>
         <nav className="nav-menu">
           <a href="/admin/dashboard" className="nav-item active">
             <div className="icon-box"><i className="fa-solid fa-chart-pie" /></div><span>DASHBOARD</span>
