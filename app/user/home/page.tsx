@@ -64,6 +64,7 @@ export default async function HomePage() {
       leaderboard={lbSorted}
       currentUserRank={currentUserRank}
       currentUserModules={currentUserModules}
+      totalModules={totalModules ?? 0}
       latestVideos={latestVideos ?? []}
     />
   )

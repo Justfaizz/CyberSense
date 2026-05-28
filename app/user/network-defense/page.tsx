@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { getBadgeForModule, type ModuleBadge } from '@/lib/badges'
 
 interface Challenge {
   threat: string
@@ -37,7 +38,14 @@ function NetworkDefenseInner() {
   const [finished, setFinished]     = useState(false)
   const [saveStatus, setSaveStatus] = useState('Encrypting...')
   const [showAchieve, setAchieve]   = useState(false)
+  const [badge, setBadge]           = useState<ModuleBadge | null>(null)
   const [nodeHighlight, setNodeHL]  = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('modules').select('id, title, game_mode').eq('status', 'active').order('id')
+      .then(({ data }) => { if (data) setBadge(getBadgeForModule(moduleId, data) ?? null) })
+  }, [moduleId]) // eslint-disable-line
 
   useEffect(() => {
     const supabase = createClient()
@@ -141,10 +149,10 @@ function NetworkDefenseInner() {
       {/* Achievement */}
       <div className={`achievement-popup${showAchieve ? ' show' : ''}`}>
         <p className="popup-headline">🏆 ACHIEVEMENT UNLOCKED</p>
-        <div className="badge-card unlocked popup-badge" style={{ borderColor: '#00e676', boxShadow: '0 0 30px rgba(0,230,118,0.35)' }}>
-          <i className="fa-solid fa-network-wired badge-icon badge-glow" style={{ color: '#00e676' }} />
-          <span className="badge-name">Node Defender</span>
-          <span className="badge-module">Network Defense</span>
+        <div className="badge-card unlocked popup-badge" style={{ borderColor: badge?.color ?? '#00e676', boxShadow: `0 0 30px ${badge?.color ?? '#00e676'}55` }}>
+          <i className={`fa-solid ${badge?.icon ?? 'fa-network-wired'} badge-icon badge-glow`} style={{ color: badge?.color ?? '#00e676' }} />
+          <span className="badge-name">{badge?.name ?? 'Achievement'}</span>
+          <span className="badge-module">{badge?.module ?? 'Module Complete'}</span>
         </div>
         <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { generateBadges } from '@/lib/badges'
 import UserProfileClient from './ProfileClient'
 
 export default async function ProfilePage() {
@@ -7,23 +8,26 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-  const { data: scores }  = await supabase.from('user_scores').select('*').eq('user_id', user.id).order('completed_at', { ascending: false })
+  const [
+    { data: profile },
+    { data: scores },
+    { data: activeModules },
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('user_scores').select('*').eq('user_id', user.id).order('completed_at', { ascending: false }),
+    supabase.from('modules').select('id, title, game_mode').eq('status', 'active').order('id'),
+  ])
 
   const totalAttempts = scores?.length ?? 0
   const passedCount   = scores?.filter(s => s.passed).length ?? 0
   const avgScore      = scores?.length ? Math.round(scores.reduce((a, s) => a + s.percentage, 0) / scores.length) : 0
 
-  const BADGES = [
-    { id: 'mod1',  name: 'Digital Guardian',  module: 'Harassment Simulator', moduleId: 1, icon: 'fa-shield-halved',          color: '#00f0ff', hint: 'Complete Module 1' },
-    { id: 'mod2',  name: 'Threat Analyst',    module: 'Rapid Threat Sorter',  moduleId: 2, icon: 'fa-magnifying-glass-chart', color: '#c490e4', hint: 'Complete Module 2' },
-    { id: 'mod3',  name: 'Node Defender',     module: 'Social Node Defense',  moduleId: 3, icon: 'fa-network-wired',          color: '#00e676', hint: 'Complete Module 3' },
-    { id: 'elite', name: 'CyberSense Elite',  module: 'All Modules',          moduleId: 0, icon: 'fa-crown',                  color: '#ffd700', hint: 'Complete all modules' },
-  ]
+  const BADGES = generateBadges(activeModules ?? [])
+  const moduleIds = (activeModules ?? []).map(m => m.id)
 
   const badgeStates = BADGES.map(b => {
     if (b.id === 'elite') {
-      const allPassed = [1, 2, 3].every(mid => scores?.some(s => s.module_id === mid && s.passed))
+      const allPassed = moduleIds.every(mid => scores?.some(s => s.module_id === mid && s.passed))
       return { ...b, unlocked: allPassed, unlockedAt: null as string | null }
     }
     const firstPass = scores

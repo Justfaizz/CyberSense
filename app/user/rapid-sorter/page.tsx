@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { getBadgeForModule, type ModuleBadge } from '@/lib/badges'
 
 interface SorterScenario {
   text: string
@@ -26,6 +27,7 @@ function RapidSorterInner() {
   const [finished, setFinished]     = useState(false)
   const [saveStatus, setSaveStatus] = useState('Encrypting...')
   const [showAchieve, setAchieve]   = useState(false)
+  const [badge, setBadge]           = useState<ModuleBadge | null>(null)
   const [showButtons, setShowBtns]  = useState(true)
 
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -35,6 +37,12 @@ function RapidSorterInner() {
 
   roundRef.current = round
   scoreRef.current = score
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.from('modules').select('id, title, game_mode').eq('status', 'active').order('id')
+      .then(({ data }) => { if (data) setBadge(getBadgeForModule(moduleId, data) ?? null) })
+  }, [moduleId]) // eslint-disable-line
 
   useEffect(() => {
     const supabase = createClient()
@@ -160,10 +168,10 @@ function RapidSorterInner() {
       {/* Achievement */}
       <div className={`achievement-popup${showAchieve ? ' show' : ''}`}>
         <p className="popup-headline">🏆 ACHIEVEMENT UNLOCKED</p>
-        <div className="badge-card unlocked popup-badge" style={{ borderColor: '#c490e4', boxShadow: '0 0 30px rgba(196,144,228,0.35)' }}>
-          <i className="fa-solid fa-magnifying-glass-chart badge-icon badge-glow" style={{ color: '#c490e4' }} />
-          <span className="badge-name">Threat Analyst</span>
-          <span className="badge-module">Rapid Threat Sorter</span>
+        <div className="badge-card unlocked popup-badge" style={{ borderColor: badge?.color ?? '#c490e4', boxShadow: `0 0 30px ${badge?.color ?? '#c490e4'}55` }}>
+          <i className={`fa-solid ${badge?.icon ?? 'fa-magnifying-glass-chart'} badge-icon badge-glow`} style={{ color: badge?.color ?? '#c490e4' }} />
+          <span className="badge-name">{badge?.name ?? 'Achievement'}</span>
+          <span className="badge-module">{badge?.module ?? 'Module Complete'}</span>
         </div>
         <p style={{ color: '#00ff66', fontSize: '0.8rem', marginTop: '15px', fontFamily: 'Montserrat' }}>✦ Badge added to your profile</p>
       </div>
