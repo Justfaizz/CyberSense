@@ -14,7 +14,7 @@
   right: 0;
   z-index: 100;
   padding: 1.25rem 0;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, padding 0.2s ease;
 }
 
 .landing-nav.scrolled {
@@ -96,7 +96,7 @@
   padding: 0.5rem 1.125rem;
   border-radius: 8px;
   border: 1px solid transparent;
-  transition: all 0.2s;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .btn-ghost:hover {
@@ -257,7 +257,7 @@
   border-radius: 12px;
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.03);
-  transition: all 0.2s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .btn-hero-secondary:hover {
@@ -980,7 +980,7 @@
   font-weight: 600;
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.03);
-  transition: all 0.2s;
+  transition: color 0.15s, border-color 0.15s;
 }
 
 .btn-cta-secondary:hover {
@@ -1045,7 +1045,8 @@
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.85rem;
-  transition: all 0.2s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  will-change: transform;
 }
 
 .social-link:hover {

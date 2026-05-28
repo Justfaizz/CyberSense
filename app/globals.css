@@ -92,7 +92,8 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
 .nav-item {
   display: flex; align-items: center; text-decoration: none; color: var(--text-main);
   font-family: 'Orbitron', sans-serif; padding: 12px 15px; border-radius: 15px;
-  transition: all 0.3s ease; border: 1px solid transparent; gap: 12px;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s; border: 1px solid transparent; gap: 12px;
+  will-change: transform;
 }
 .nav-item:hover { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--glass-border); transform: translateX(5px); }
 .nav-item.active {
@@ -110,7 +111,7 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
 
 .input-group {
   display: flex; align-items: center; border-bottom: 2px solid var(--text-muted);
-  margin-bottom: 2rem; padding-bottom: 0.5rem; transition: border-color 0.3s;
+  margin-bottom: 2rem; padding-bottom: 0.5rem; transition: border-color 0.15s;
 }
 .input-group:focus-within { border-color: var(--neon-blue); }
 .input-group i { color: var(--text-muted); margin-right: 15px; font-size: 1rem; }
@@ -124,7 +125,8 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
   color: #000; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
   font-weight: 700; border: none; padding: 15px 30px; border-radius: 50px;
-  cursor: pointer; letter-spacing: 2px; transition: all 0.3s;
+  cursor: pointer; letter-spacing: 2px; transition: transform 0.15s, box-shadow 0.15s;
+  will-change: transform;
 }
 .login-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 240, 255, 0.5); }
 
@@ -156,8 +158,9 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   padding: 20px 30px; border-radius: 25px;
   font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.1rem;
-  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
   color: white; backdrop-filter: blur(10px); text-decoration: none; display: block;
+  will-change: transform;
 }
 .module-card:hover, .learning-card:hover {
   transform: translateY(-5px) scale(1.02);
@@ -353,7 +356,8 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   align-items: center;
   gap: 8px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.15s, box-shadow 0.15s;
+  will-change: transform;
 }
 
 .badge-card.unlocked { border-style: solid; }

@@ -107,7 +107,7 @@ export default function UserVideosClient({ videos, userName }: Props) {
                 fontFamily: 'Orbitron',
                 fontSize: '0.72rem',
                 letterSpacing: '1px',
-                transition: 'all 0.2s',
+                transition: 'background 0.15s, color 0.15s, border-color 0.15s',
                 fontWeight: 700,
               }}>
                 {CATEGORY_LABELS[cat]}
