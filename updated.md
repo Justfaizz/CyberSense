@@ -1,20 +1,42 @@
-# CyberSense — Feature Brainstorm: Leaderboard, Achievement Badges & Mobile
+# CyberSense — Update Log
 
-> **Status:** Brainstorm / Planning — v2 (Refined)
-> **Date:** 2026-05-27
-> **Scope:** (1) Achievement badge system tied to module completion, (2) Redesigned badge popup on module finish, (3) Consistent badge design across popup + profile, (4) Mobile-responsive UI fix, (5) Leaderboard upgrade
+> **Last updated:** 2026-05-27
 
 ---
 
-## 1. Current State Audit
+## Feature: Achievement Badges, Leaderboard Upgrade & Popup Redesign
 
-| Area | Current Behaviour | Problem |
+> **Status:** ✅ IMPLEMENTED
+> **Scope:** (1) Achievement badge system tied to module completion, (2) Redesigned badge popup on module finish, (3) Consistent badge design across popup + profile, (4) Leaderboard upgrade
+> **Note:** Mobile-responsive CSS is still pending — see bottom of this file.
+
+### Files Implemented
+
+| File | What Was Done |
+|---|---|
+| `app/user/profile/page.tsx` | Added `BADGES` config, derived `badgeStates` from `user_scores`, rendered full badge grid with locked/unlocked states |
+| `app/user/chat-simulator/page.tsx` | Replaced generic popup with Module 1 badge card (Digital Guardian, neon-blue) |
+| `app/user/rapid-sorter/page.tsx` | Replaced generic popup with Module 2 badge card (Threat Analyst, neon-purple) |
+| `app/user/network-defense/page.tsx` | Replaced generic popup with Module 3 badge card (Node Defender, neon-green) |
+| `app/user/home/page.tsx` | Rewrote leaderboard query to count distinct modules completed per user |
+| `app/user/home/HomeClient.tsx` | New leaderboard UI with medals (🥇🥈🥉), shield icons, X/3 display, and pinned "YOU" row |
+| `app/globals.css` | Added `.achievement-popup`, `.badge-card`, `.badge-icon`, `.badge-glow`, `.popup-badge` styles |
+
+> **Known gap:** `badge-card`, `badge-grid`, `badge-name`, `badge-module`, `badge-status` CSS classes are used in `app/user/profile/page.tsx` but their definitions in `globals.css` need to be verified — mobile responsive rules (`@media` breakpoints) for the dashboard layout are also not yet added.
+
+---
+
+## Design Reference (Original Planning Notes)
+
+> These were the problems being solved. Kept for reference.
+
+| Area | Problem | Status |
 |---|---|---|
-| **Achievement popup** | Generic star icon + "LEVEL CLEARED!" text, only triggers at 100% | No module identity — every module shows identical popup; doesn't feel earned |
-| **Profile page** | Stats + raw score table only | No visual badge wall; no sense of long-term progression |
-| **Pass condition** | Requires 100% in all 3 modules (`passed: pct === 100`) | Badge unlock = completing (passing) a module |
-| **Leaderboard** | Counts perfect-score attempts only; top 5; no user's own rank | Discourages non-perfect users; stale data |
-| **Mobile layout** | `dashboard-container` likely uses fixed-width sidebars | Sidebar and card layouts break on narrow screens |
+| **Achievement popup** | Generic star icon, no module identity | ✅ Fixed — module-specific badge card per game |
+| **Profile page** | No badge wall, no sense of progression | ✅ Fixed — full badge grid with locked/unlocked states |
+| **Pass condition** | Badge unlock tied to 100% score | ✅ Implemented as planned |
+| **Leaderboard** | Counted perfect attempts only, top 5, no user rank | ✅ Fixed — counts distinct modules, medals, "YOU" row |
+| **Mobile layout** | Dashboard sidebar breaks on narrow screens | ⏳ Not yet implemented |
 
 ---
 
@@ -257,47 +279,65 @@ On mobile, the sidebar becomes a **sticky top bar** with icon-only nav links (no
 
 ---
 
-## 5. Implementation Plan
+## 5. Implementation Status
 
-### Phase 1 — Shared Badge Component + Profile Page
-**Files:** `app/user/profile/page.tsx`, `app/globals.css`
-1. Create `BADGES` config array (single source of truth for all badge metadata)
-2. Add `badge-card`, `badge-grid`, `badge-glow` CSS classes to `globals.css`
-3. Add "ACHIEVEMENTS" section to profile page using the badge grid
-4. Derive badge unlock states from existing `user_scores` data
+| Phase | Description | Status |
+|---|---|---|
+| Phase 1 | Badge component + profile page achievements section | ✅ Done |
+| Phase 2 | Redesigned module-specific completion popup (all 3 games) | ✅ Done |
+| Phase 3 | Leaderboard upgrade (medals, modules count, user rank) | ✅ Done |
+| Phase 4 | Mobile responsive CSS (`@media` breakpoints in `globals.css`) | ⏳ Pending |
 
-### Phase 2 — Redesigned Completion Popup (All 3 Game Modules)
-**Files:** `app/user/chat-simulator/page.tsx`, `app/user/rapid-sorter/page.tsx`, `app/user/network-defense/page.tsx`, `app/globals.css`
-1. Update `.achievement-popup` CSS to render the badge card design
-2. Pass module-specific badge config (icon, color, name) into each popup
-3. Increase auto-dismiss timer to 4 seconds
+## 6. Actual Files Changed
 
-### Phase 3 — Leaderboard Upgrade
-**Files:** `app/user/home/page.tsx`, `app/user/home/HomeClient.tsx`
-1. Rewrite leaderboard query to count **distinct modules completed per user** (deduplicate module_id per user from `user_scores` where `passed = true`)
-2. Add current user's own rank computation
-3. Update `HomeClient.tsx` leaderboard render with medals, `X/3 modules` display, shield icons, "Your Standing" row
+| File | Change | Status |
+|---|---|---|
+| `app/globals.css` | Badge card styles + popup redesign | ✅ Done |
+| `app/user/profile/page.tsx` | Badge states + Achievements section | ✅ Done |
+| `app/user/chat-simulator/page.tsx` | Module-specific badge popup | ✅ Done |
+| `app/user/rapid-sorter/page.tsx` | Module-specific badge popup | ✅ Done |
+| `app/user/network-defense/page.tsx` | Module-specific badge popup | ✅ Done |
+| `app/user/home/page.tsx` | Leaderboard query rewrite | ✅ Done |
+| `app/user/home/HomeClient.tsx` | New leaderboard UI | ✅ Done |
+| `app/globals.css` | Mobile `@media` breakpoints | ⏳ Pending |
 
-### Phase 4 — Mobile Responsive CSS
-**Files:** `app/globals.css`
-1. Add `@media (max-width: 768px)` rules for sidebar → top nav
-2. Fix module card, stats card, and badge grid stacking
-3. Add horizontal scroll to the mission history table on mobile
-4. Fix achievement popup sizing on mobile
-5. Test all 5 pages visually
+> **No database migration required for any of the above features.**
 
 ---
 
-## 6. Files to Touch (Full Summary)
+## Feature: Profile Editing for Admin & User
 
-| File | What Changes |
+**Date:** 2026-05-27
+
+### What Was Added
+
+Both admin and student users can now edit their own profile directly from the Profile page. The edit form lets them update their display name and optionally set a new password, without leaving the page.
+
+### Files Added
+
+| File | Purpose |
 |---|---|
-| `app/globals.css` | Badge card styles, popup redesign, mobile responsive breakpoints |
-| `app/user/profile/page.tsx` | Derive badge states; add Achievements section |
-| `app/user/chat-simulator/page.tsx` | Pass badge config to achievement popup |
-| `app/user/rapid-sorter/page.tsx` | Pass badge config to achievement popup |
-| `app/user/network-defense/page.tsx` | Pass badge config to achievement popup |
-| `app/user/home/page.tsx` | Rewrite leaderboard query (points model + user rank) |
-| `app/user/home/HomeClient.tsx` | New leaderboard UI (medals, points, badge count, Your Standing) |
+| `app/api/profile/route.ts` | New PATCH API endpoint. Authenticated users can update their own `full_name` in the `profiles` table and/or change their Supabase Auth password. |
+| `app/admin/profile/ProfileClient.tsx` | Client component for the admin profile page. Renders a view/edit toggle with neon-blue styling matching the admin theme. |
+| `app/user/profile/ProfileClient.tsx` | Client component for the student profile page. Same logic, styled with neon-purple to match the student theme. |
 
-> **No database migration required for any of the above features.**
+### Files Modified
+
+| File | Change |
+|---|---|
+| `app/admin/profile/page.tsx` | Replaced the static profile card with `<AdminProfileClient>`, passing `fullName` and `email` as props. |
+| `app/user/profile/page.tsx` | Replaced the static profile card with `<UserProfileClient>`. Stats, badges, and mission history remain unchanged. |
+
+### How It Works
+
+1. **View mode** — The profile card shows the current display name and email with an **EDIT PROFILE** button.
+2. **Edit mode** — Clicking the button reveals inputs for Display Name, New Password, and Confirm Password.
+3. **Validation** — Client-side checks ensure the name isn't blank, passwords match, and the new password is at least 6 characters before hitting the API.
+4. **API call** — A `PATCH /api/profile` request updates the `profiles` table (name) and calls `supabase.auth.updateUser` (password) only if a new password was entered.
+5. **Feedback** — A success or error banner appears inline. On success, the form collapses back to view mode.
+
+### Security Notes
+
+- The `/api/profile` route calls `supabase.auth.getUser()` server-side — unauthenticated requests are rejected with `401`.
+- Users can only update their own profile; no user ID is accepted from the request body.
+- Password is sent over HTTPS and processed exclusively by Supabase Auth — it is never stored in the `profiles` table.

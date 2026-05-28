@@ -12,14 +12,22 @@ export default function LoginPage() {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
 
-  // Cursor glow effect
+  // Cursor glow effect — transform-based positioning avoids layout thrashing
   useEffect(() => {
-    const glow = document.getElementById('cursor-glow')
+    const glow = document.getElementById('cursor-glow') as HTMLElement | null
+    if (!glow) return
+    let rafId: number
     const handleMove = (e: MouseEvent) => {
-      if (glow) { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px' }
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => {
+        glow.style.transform = `translate(${e.clientX - 150}px, ${e.clientY - 150}px)`
+      })
     }
-    document.addEventListener('mousemove', handleMove)
-    return () => document.removeEventListener('mousemove', handleMove)
+    document.addEventListener('mousemove', handleMove, { passive: true })
+    return () => {
+      document.removeEventListener('mousemove', handleMove)
+      cancelAnimationFrame(rafId)
+    }
   }, [])
 
   async function handleLogin(e: React.FormEvent) {

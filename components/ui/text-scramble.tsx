@@ -1,5 +1,5 @@
 'use client';
-import { type JSX, useEffect, useState } from 'react';
+import { type JSX, useEffect, useState, useRef, memo, useMemo } from 'react';
 import { motion, MotionProps } from 'framer-motion';
 
 type TextScrambleProps = {
@@ -16,7 +16,7 @@ type TextScrambleProps = {
 const defaultChars =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-export function TextScramble({
+export const TextScramble = memo(function TextScramble({
   children,
   duration = 0.8,
   speed = 0.04,
@@ -27,35 +27,34 @@ export function TextScramble({
   onScrambleComplete,
   ...props
 }: TextScrambleProps) {
-  const MotionComponent = motion.create(
-    Component as keyof JSX.IntrinsicElements
+  // Memoize the motion-wrapped component so it isn't recreated on every render
+  const MotionComponent = useMemo(
+    () => motion.create(Component as keyof JSX.IntrinsicElements),
+    [Component]
   );
   const [displayText, setDisplayText] = useState(children);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const isAnimatingRef = useRef(false);
   const text = children;
 
-  const scramble = async () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
+  useEffect(() => {
+    if (!trigger) return;
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
 
     const steps = duration / speed;
     let step = 0;
+    const charLen = characterSet.length;
 
     const interval = setInterval(() => {
-      let scrambled = '';
       const progress = step / steps;
+      let scrambled = '';
 
       for (let i = 0; i < text.length; i++) {
-        if (text[i] === ' ') {
-          scrambled += ' ';
-          continue;
-        }
-
+        if (text[i] === ' ') { scrambled += ' '; continue; }
         if (progress * text.length > i) {
           scrambled += text[i];
         } else {
-          scrambled +=
-            characterSet[Math.floor(Math.random() * characterSet.length)];
+          scrambled += characterSet[Math.floor(Math.random() * charLen)];
         }
       }
 
@@ -65,20 +64,17 @@ export function TextScramble({
       if (step > steps) {
         clearInterval(interval);
         setDisplayText(text);
-        setIsAnimating(false);
+        isAnimatingRef.current = false;
         onScrambleComplete?.();
       }
     }, speed * 1000);
-  };
 
-  useEffect(() => {
-    if (!trigger) return;
-    scramble();
-  }, [trigger]);
+    return () => clearInterval(interval);
+  }, [trigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <MotionComponent className={className} {...props}>
       {displayText}
     </MotionComponent>
   );
-}
+});

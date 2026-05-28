@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { Video } from '@/lib/types'
@@ -44,9 +44,10 @@ export default function UserVideosClient({ videos, userName }: Props) {
     router.push('/login')
   }
 
-  const filtered = activeCategory === 'all'
-    ? videos
-    : videos.filter(v => v.category === activeCategory)
+  const filtered = useMemo(
+    () => activeCategory === 'all' ? videos : videos.filter(v => v.category === activeCategory),
+    [activeCategory, videos]
+  )
 
   return (
     <div className="dashboard-container">

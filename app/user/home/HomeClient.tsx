@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { TextScramble } from '@/components/ui/text-scramble'
@@ -35,6 +35,26 @@ function fmtDuration(sec: number) {
   const m = Math.floor(sec / 60)
   const s = sec % 60
   return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+const MEDALS = ['🥇', '🥈', '🥉']
+
+function LeaderboardRow({ entry, rank, totalModules }: { entry: { full_name: string; modulesCompleted: number }; rank: string; totalModules: number }) {
+  const shields = useMemo(() =>
+    Array.from({ length: totalModules }, (_, idx) => (
+      <i key={idx} className="fa-solid fa-shield-halved" style={{ color: idx < entry.modulesCompleted ? 'var(--neon-blue)' : '#333', fontSize: '0.75rem' }} />
+    )),
+    [entry.modulesCompleted, totalModules]
+  )
+  return (
+    <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px dashed #222', fontSize: '0.88rem' }}>
+      <span>{rank} {entry.full_name}</span>
+      <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+        {shields}
+        <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.78rem', marginLeft: '6px' }}>{entry.modulesCompleted}/{totalModules}</span>
+      </span>
+    </li>
+  )
 }
 
 const QUOTES = [
@@ -173,24 +193,9 @@ export default function HomeClient({ userName, passedIds, progress, leaderboard,
             ) : (
               <>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'white' }}>
-                  {leaderboard.map((entry, i) => {
-                    const medals = ['🥇', '🥈', '🥉']
-                    const rank = medals[i] ?? `${i + 1}`
-                    const shields = Array.from({ length: totalModules }, (_, idx) =>
-                      idx < entry.modulesCompleted
-                        ? <i key={idx} className="fa-solid fa-shield-halved" style={{ color: 'var(--neon-blue)', fontSize: '0.75rem' }} />
-                        : <i key={idx} className="fa-solid fa-shield-halved" style={{ color: '#333', fontSize: '0.75rem' }} />
-                    )
-                    return (
-                      <li key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px dashed #222', fontSize: '0.88rem' }}>
-                        <span>{rank} {entry.full_name}</span>
-                        <span style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                          {shields}
-                          <span style={{ color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.78rem', marginLeft: '6px' }}>{entry.modulesCompleted}/{totalModules}</span>
-                        </span>
-                      </li>
-                    )
-                  })}
+                  {leaderboard.map((entry, i) => (
+                    <LeaderboardRow key={i} entry={entry} rank={MEDALS[i] ?? `${i + 1}`} totalModules={totalModules} />
+                  ))}
                 </ul>
                 <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--neon-purple)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--neon-blue)', fontFamily: 'Orbitron', fontSize: '0.75rem' }}>
                   <span>▶ YOU: #{currentUserRank}</span>
