@@ -17,7 +17,8 @@ export default function Navbar() {
     <nav className={`landing-nav${scrolled ? " scrolled" : ""}`}>
       <div className="nav-container">
         <Link href="/" className="nav-logo">
-          <img src="/logo.png" alt="CyberSense" style={{ height: '48px', width: 'auto', objectFit: 'contain' }} />
+          <span className="logo-icon">⚡</span>
+          <span className="logo-text">CyberSense</span>
         </Link>
 
         <div className={`nav-links${menuOpen ? " open" : ""}`}>

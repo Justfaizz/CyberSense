@@ -46,9 +46,7 @@ export default async function ProfilePage() {
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
-        <div className="sidebar-header">
-          <img src="/logo.png" alt="CyberSense" style={{ width: '140px', objectFit: 'contain' }} />
-        </div>
+        <div className="sidebar-header"><h2 className="glow-text">CYBERSENSE</h2></div>
         <nav className="nav-menu">
           <a href="/user/home" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-house" /></div><span>HOME</span>
