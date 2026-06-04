@@ -63,6 +63,9 @@ export default function UserVideosClient({ videos, userName }: Props) {
           <a href="/user/videos" className="nav-item active">
             <div className="icon-box"><i className="fa-solid fa-play-circle" /></div><span>VIDEOS</span>
           </a>
+          <a href="/user/leaderboard" className="nav-item">
+            <div className="icon-box"><i className="fa-solid fa-trophy" /></div><span>LEADERBOARD</span>
+          </a>
           <div className="nav-section-title">ACCOUNT</div>
           <a href="/user/profile" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-user" /></div><span>PROFILE</span>

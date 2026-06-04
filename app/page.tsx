@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
+import ShaderBackground from "@/components/landing/ShaderBackground";
 import "./landing.css";
 
 // Below-fold sections loaded lazily — they don't block the initial render
@@ -27,6 +28,7 @@ export const metadata = {
 export default function LandingPage() {
   return (
     <main className="landing-page">
+      <ShaderBackground />
       <Navbar />
       <HeroSection />
       <StatsStrip />

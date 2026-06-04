@@ -51,16 +51,15 @@ body::before {
 
 h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px; }
 
-/* ── Glow Animation ── */
+/* ── Glow Animation — filter: drop-shadow is GPU-composited unlike text-shadow ── */
 .glow-text {
   color: #fff;
-  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-purple), 0 0 40px var(--neon-blue);
+  filter: drop-shadow(0 0 6px rgba(196,144,228,0.7)) drop-shadow(0 0 14px rgba(0,240,255,0.4));
   animation: pulsate 2s infinite alternate;
-  will-change: text-shadow;
 }
 @keyframes pulsate {
-  100% { text-shadow: 0 0 4px #fff, 0 0 11px #fff, 0 0 19px var(--neon-purple), 0 0 40px var(--neon-blue); }
-  0%   { text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 6px var(--neon-blue), 0 0 10px var(--neon-blue); }
+  0%   { filter: drop-shadow(0 0 4px rgba(196,144,228,0.5)) drop-shadow(0 0 8px rgba(0,240,255,0.25)); }
+  100% { filter: drop-shadow(0 0 8px rgba(196,144,228,0.9)) drop-shadow(0 0 18px rgba(0,240,255,0.55)); }
 }
 
 /* ── Dashboard Layout ── */
@@ -69,8 +68,8 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
 /* ── Glassmorphism panels ── */
 .sidebar, .main-content, .login-container, .settings-form-container {
   background: linear-gradient(135deg, rgba(46, 13, 54, 0.7), rgba(13, 2, 18, 0.8));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transform: translateZ(0); /* promote to GPU compositing layer */
   border: 1px solid var(--glass-border);
   border-top: 1px solid rgba(255, 255, 255, 0.3);
@@ -93,7 +92,6 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   display: flex; align-items: center; text-decoration: none; color: var(--text-main);
   font-family: 'Orbitron', sans-serif; padding: 12px 15px; border-radius: 15px;
   transition: background 0.15s, border-color 0.15s, transform 0.15s; border: 1px solid transparent; gap: 12px;
-  will-change: transform;
 }
 .nav-item:hover { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--glass-border); transform: translateX(5px); }
 .nav-item.active {
@@ -126,7 +124,6 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   color: #000; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
   font-weight: 700; border: none; padding: 15px 30px; border-radius: 50px;
   cursor: pointer; letter-spacing: 2px; transition: transform 0.15s, box-shadow 0.15s;
-  will-change: transform;
 }
 .login-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 240, 255, 0.5); }
 
@@ -159,8 +156,7 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   padding: 20px 30px; border-radius: 25px;
   font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.1rem;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-  color: white; backdrop-filter: blur(10px); text-decoration: none; display: block;
-  will-change: transform;
+  color: white; backdrop-filter: blur(8px); text-decoration: none; display: block;
 }
 .module-card:hover, .learning-card:hover {
   transform: translateY(-5px) scale(1.02);
@@ -357,7 +353,6 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   gap: 8px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
   transition: transform 0.15s, box-shadow 0.15s;
-  will-change: transform;
 }
 
 .badge-card.unlocked { border-style: solid; }

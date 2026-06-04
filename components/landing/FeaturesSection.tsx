@@ -1,33 +1,58 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+
+const PlayIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3" />
+  </svg>
+);
+const ZapIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+const TrendIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
+  </svg>
+);
+const UnlockIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+  </svg>
+);
 
 const features = [
   {
-    icon: "🎮",
-    title: "Learn Through Play, Not Lectures",
-    desc: "CyberSense uses gamified, decision-based simulations instead of passive video lectures. You're dropped into realistic cyberbullying scenarios — trolling, flaming, masquerading, denigration, phishing — and must make choices under pressure, just like in real life.",
+    Icon: PlayIcon,
+    title: "You learn by doing, not watching",
+    desc: "CyberSense drops you into realistic scenarios — trolling, masquerading, phishing, denigration — and asks you to make decisions under pressure. No passive videos. No multiple choice. Real choices, real feedback.",
+    accent: "var(--neon-purple)",
   },
   {
-    icon: "⚡",
-    title: "Real-Time Severity Score Feedback",
-    desc: "After every decision, the platform instantly rates your response (Low Risk / High Risk) and awards Situation Awareness points. No waiting until the end — you learn the moment you decide.",
+    Icon: ZapIcon,
+    title: "You know if you got it right immediately",
+    desc: "After every decision, the platform rates your response and explains why. No waiting for a final score — the lesson lands in the moment you need it most.",
+    accent: "var(--neon-blue)",
   },
   {
-    icon: "📊",
-    title: "Track Your Situation Awareness (SA)",
-    desc: "Your personal dashboard visualises your progress across three SA cognitive levels: Perception (spot the threat), Comprehension (understand its impact), and Projection (predict what happens next). Watch your skills grow in real time.",
+    Icon: TrendIcon,
+    title: "You can see yourself improving",
+    desc: "Your dashboard tracks progress across three levels of awareness: spotting threats, understanding their impact, and predicting how they escalate. Watch your skills grow each session.",
+    accent: "var(--neon-green)",
   },
   {
-    icon: "🆓",
-    title: "Free for All University Students",
-    desc: "Unlike KnowBe4 ($5,000–$30,000 licence) or Udemy ($54.99–$189.99 per course), CyberSense is completely free. No paywalls, no institutional subscription required. Built specifically for the student digital environment.",
+    Icon: UnlockIcon,
+    title: "No paywall. No institution required.",
+    desc: "Commercial security training costs thousands of dollars per seat. CyberSense is completely free for every university student — no licence, no subscription, no catch.",
+    accent: "var(--neon-purple)",
   },
 ];
 
-function FeatureCard({ icon, title, desc, index }: { icon: string; title: string; desc: string; index: number }) {
+function FeatureCard({ Icon, title, desc, accent, index }: typeof features[0] & { index: number }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
 
@@ -35,13 +60,17 @@ function FeatureCard({ icon, title, desc, index }: { icon: string; title: string
     <motion.div
       ref={ref}
       className="feature-card"
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      transition={{ duration: 0.4, delay: index * 0.08 }}
     >
-      <div className="feature-icon">{icon}</div>
+      <div className="feature-icon" style={{ color: accent }}>
+        <Icon />
+      </div>
       <div className="feature-content">
-        <div className="feature-title">{title}</div>
+        <div className="feature-title" style={{ borderBottom: `2px solid ${accent}`, paddingBottom: '0.375rem', marginBottom: '0.625rem', display: 'inline-block' }}>
+          {title}
+        </div>
         <p className="feature-desc">{desc}</p>
       </div>
     </motion.div>
@@ -60,7 +89,7 @@ export default function FeaturesSection() {
           className="section-header"
           initial={{ opacity: 0, y: 20 }}
           animate={headerInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4 }}
         >
           <div className="section-eyebrow">How CyberSense Helps</div>
           <h2 className="section-title">
@@ -75,8 +104,8 @@ export default function FeaturesSection() {
         </motion.div>
 
         <div className="features-grid">
-          {features.map((feature, i) => (
-            <FeatureCard key={feature.title} {...feature} index={i} />
+          {features.map((f, i) => (
+            <FeatureCard key={f.title} {...f} index={i} />
           ))}
         </div>
       </div>
