@@ -15,27 +15,38 @@ export default async function AdminDashboard() {
     ? Math.round(avgData.reduce((a, r) => a + Number(r.percentage), 0) / avgData.length)
     : 0
 
-  // Recent activity
-  const { data: activity } = await supabase
+  // Recent activity — fetch scores and profiles separately to avoid RLS join issues
+  const { data: activityScores } = await supabase
     .from('user_scores')
-    .select('*, profiles!inner(full_name)')
+    .select('*')
     .order('completed_at', { ascending: false })
     .limit(10)
 
-  // Leaderboard
-  const { data: allScores } = await supabase
-    .from('user_scores')
-    .select('user_id, percentage, profiles!inner(full_name)')
-    .eq('percentage', 100)
-    .limit(200)
+  const { data: allProfiles } = await supabase.from('profiles').select('id, full_name')
 
-  const lbMap: Record<string, { full_name: string; count: number }> = {}
-  for (const row of allScores ?? []) {
-    const p = row.profiles as unknown as { full_name: string }
-    if (!lbMap[row.user_id]) lbMap[row.user_id] = { full_name: p.full_name, count: 0 }
-    lbMap[row.user_id].count++
+  const profileMap: Record<string, string> = {}
+  for (const p of (allProfiles ?? [])) { if (p.full_name) profileMap[p.id] = p.full_name }
+
+  const activity = (activityScores ?? []).map(s => ({ ...s, agentName: profileMap[s.user_id] ?? 'Unknown' }))
+
+  // Leaderboard — modules completed (same model as user leaderboard)
+  const { data: allPassedScores } = await supabase
+    .from('user_scores')
+    .select('user_id, module_id')
+    .eq('passed', true)
+    .limit(2000)
+
+  const userModules: Record<string, Set<number>> = {}
+  for (const row of (allPassedScores ?? [])) {
+    if (!userModules[row.user_id]) userModules[row.user_id] = new Set()
+    userModules[row.user_id].add(row.module_id)
   }
-  const leaderboard = Object.values(lbMap).sort((a, b) => b.count - a.count).slice(0, 10)
+
+  const leaderboard = Object.entries(userModules)
+    .map(([uid, s]) => ({ full_name: profileMap[uid] ?? 'Unknown', count: s.size }))
+    .filter(u => u.full_name !== 'Unknown')
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10)
 
   async function handleLogout() {
     'use server'
@@ -106,7 +117,7 @@ export default async function AdminDashboard() {
               <i className="fa-solid fa-trophy" /> TOP DEFENDERS
             </h3>
             {leaderboard.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>No perfect scores yet.</p>
+              <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>No completions yet.</p>
             ) : leaderboard.map((u, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px dashed #333' }}>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -114,7 +125,7 @@ export default async function AdminDashboard() {
                   <span style={{ color: 'white', fontWeight: 600 }}>{u.full_name}</span>
                 </div>
                 <div style={{ color: 'var(--neon-purple)', fontFamily: 'Orbitron', fontWeight: 'bold' }}>
-                  <i className="fa-solid fa-star" /> {u.count}
+                  <i className="fa-solid fa-shield-halved" /> {u.count} mod{u.count !== 1 ? 's' : ''}
                 </div>
               </div>
             ))}
@@ -134,10 +145,9 @@ export default async function AdminDashboard() {
                   {!activity || activity.length === 0 ? (
                     <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '30px' }}>No activity yet.</td></tr>
                   ) : activity.map((a) => {
-                    const p = (a.profiles as unknown as { full_name: string })
                     return (
                       <tr key={a.id}>
-                        <td style={{ fontWeight: 600 }}>{p.full_name}</td>
+                        <td style={{ fontWeight: 600 }}>{a.agentName}</td>
                         <td><span style={{ color: 'var(--neon-blue)' }}><i className="fa-solid fa-microchip" /> Mod {a.module_id}</span></td>
                         <td style={{ color: 'var(--text-muted)' }}>{a.score} pts ({a.percentage}%)</td>
                         <td><span className={`status-badge ${a.passed ? 'status-pass' : 'status-fail'}`}>{a.passed ? 'PASSED' : 'FAILED'}</span></td>
