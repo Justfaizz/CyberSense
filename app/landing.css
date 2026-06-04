@@ -235,13 +235,12 @@
   border-radius: 12px;
   background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
   box-shadow: 0 0 28px rgba(196, 144, 228, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s;
   letter-spacing: 0.02em;
 }
 
 .btn-hero-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(196, 144, 228, 0.6), 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .btn-hero-secondary {
@@ -818,14 +817,13 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 0.95rem;
   font-weight: 700;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s;
   box-shadow: 0 0 28px rgba(196, 144, 228, 0.3);
   letter-spacing: 0.02em;
 }
 
 .btn-cta-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(196, 144, 228, 0.5);
 }
 
 .btn-cta-secondary {

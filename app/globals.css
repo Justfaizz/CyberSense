@@ -144,7 +144,9 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   border: 1px solid var(--glass-border);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   border-left: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 25px; backdrop-filter: blur(8px);
+  border-radius: 25px; backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  will-change: transform;
   contain: layout style;
 }
 
@@ -155,12 +157,13 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   padding: 20px 30px; border-radius: 25px;
   font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.1rem;
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-  color: white; backdrop-filter: blur(8px); text-decoration: none; display: block;
+  transition: transform 0.15s, border-color 0.15s;
+  color: white; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  will-change: transform;
+  text-decoration: none; display: block;
 }
 .module-card:hover, .learning-card:hover {
   transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 30px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.1);
   border-color: var(--neon-blue);
 }
 
@@ -308,8 +311,9 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   border: 2px solid var(--neon-blue); border-radius: 30px; padding: 50px;
   text-align: center; z-index: 1000; box-shadow: 0 0 50px rgba(0, 240, 255, 0.6);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  backdrop-filter: blur(10px);
+  opacity: 0; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  will-change: transform;
 }
 .achievement-popup.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 .achievement-popup i { font-size: 6rem; margin-bottom: 20px; animation: spinBadge 1s ease-out forwards; }
@@ -352,7 +356,7 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   align-items: center;
   gap: 8px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s;
 }
 
 .badge-card.unlocked { border-style: solid; }
@@ -480,4 +484,13 @@ h1, h2, h3, .orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 2px
   .achievement-popup { width: 90vw; padding: 30px 20px; }
 
   .page-title { font-size: 1.6rem; }
+}
+
+/* ── Reduce motion for accessibility + compositor budget ── */
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  .glow-text { animation: none; }
+  .badge-dot { animation: none; }
+  .badge-glow { animation: none; }
+  .loading-ring { animation-duration: 3s; }
 }

@@ -93,26 +93,40 @@ export default function ShaderBackground() {
     const uRes  = gl.getUniformLocation(prog, 'u_res');
 
     let id: number;
+    let lastFrame = 0;
+    let paused = false;
     const t0 = performance.now();
 
     function resize() {
-      canvas!.width  = window.innerWidth;
-      canvas!.height = window.innerHeight;
+      canvas!.width  = window.innerWidth  * 0.5;
+      canvas!.height = window.innerHeight * 0.5;
       gl!.viewport(0, 0, canvas!.width, canvas!.height);
     }
 
-    function draw() {
-      gl!.uniform1f(uTime, (performance.now() - t0) / 1000);
+    function draw(now: number) {
+      id = requestAnimationFrame(draw);
+      if (paused) return;
+      if (now - lastFrame < 33) return; // ~30 fps
+      lastFrame = now;
+      gl!.uniform1f(uTime, (now - t0) / 1000);
       gl!.uniform2f(uRes, canvas!.width, canvas!.height);
       gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4);
-      id = requestAnimationFrame(draw);
+    }
+
+    function onVisibility() {
+      paused = document.visibilityState === 'hidden';
     }
 
     resize();
     window.addEventListener('resize', resize);
-    draw();
+    document.addEventListener('visibilitychange', onVisibility);
+    id = requestAnimationFrame(draw);
 
-    return () => { cancelAnimationFrame(id); window.removeEventListener('resize', resize); };
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, []);
 
   return (
