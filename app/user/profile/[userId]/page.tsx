@@ -3,12 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { generateBadges } from '@/lib/badges'
 import Link from 'next/link'
 
-export default async function PublicProfilePage({ params }: { params: { userId: string } }) {
+export default async function PublicProfilePage({ params }: { params: Promise<{ userId: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const targetId = params.userId
+  const { userId: targetId } = await params
 
   const [
     { data: targetProfile },
