@@ -15,10 +15,18 @@ function getAnonClient() {
   )
 }
 
+// Service role bypasses RLS — safe because cache.ts is server-only
+function getServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
 /** Leaderboard scores — all passed attempts, max 500 rows, cached 60 s */
 export const getCachedLbScores = unstable_cache(
   async () => {
-    const supabase = getAnonClient()
+    const supabase = getServiceClient()
     const { data } = await supabase
       .from('user_scores')
       .select('user_id, module_id, time_taken')
@@ -33,7 +41,7 @@ export const getCachedLbScores = unstable_cache(
 /** All profiles (id + full_name + institution), max 500 rows, cached 60 s */
 export const getCachedProfiles = unstable_cache(
   async () => {
-    const supabase = getAnonClient()
+    const supabase = getServiceClient()
     const { data } = await supabase
       .from('profiles')
       .select('id, full_name, institution')
