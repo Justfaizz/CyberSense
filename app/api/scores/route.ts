@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { module_id, score, total_questions, percentage } = body
+  const { module_id, score, total_questions, percentage, time_taken } = body
 
   if (module_id == null || score == null || total_questions == null || percentage == null) {
     return NextResponse.json({ status: 'error', message: 'Incomplete data' }, { status: 400 })
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     total_questions,
     percentage,
     passed,
+    time_taken: time_taken ?? null,
   })
 
   if (error) {

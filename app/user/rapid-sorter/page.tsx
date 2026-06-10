@@ -34,6 +34,7 @@ function RapidSorterInner() {
   const roundRef = useRef(round)
   const scoreRef = useRef(score)
   const scenariosRef = useRef<SorterScenario[]>([])
+  const startTimeRef = useRef<number>(0)
 
   roundRef.current = round
   scoreRef.current = score
@@ -59,6 +60,7 @@ function RapidSorterInner() {
         scenariosRef.current = mapped
         setScenarios(mapped)
         setLoading(false)
+        startTimeRef.current = Date.now()
         startRound(0, 0, mapped)
       })
   }, [moduleId]) // eslint-disable-line
@@ -121,10 +123,11 @@ function RapidSorterInner() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
+      const time_taken = Math.round((Date.now() - startTimeRef.current) / 1000)
       await supabase.from('user_scores').insert({
         user_id: user.id, module_id: moduleId,
         score: finalScore, total_questions: list.length,
-        percentage: pct, passed: pct === 100,
+        percentage: pct, passed: pct === 100, time_taken,
       })
       setSaveStatus('✓ Uploaded to HQ.')
     }

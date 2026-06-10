@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { getCachedLbScores, getCachedProfiles, getCachedModuleCount } from '@/lib/cache'
 
 async function handleLogout() {
   'use server'
@@ -16,43 +17,64 @@ export default async function LeaderboardPage() {
 
   const [
     { data: profile },
-    { count: totalModules },
-    { data: lbScores },
-    { data: lbProfiles },
+    totalModules,
+    lbScores,
+    lbProfiles,
   ] = await Promise.all([
     supabase.from('profiles').select('full_name').eq('id', user.id).single(),
-    supabase.from('modules').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from('user_scores').select('user_id, module_id').eq('passed', true).limit(2000),
-    supabase.from('profiles').select('id, full_name, institution'),
+    getCachedModuleCount(),
+    getCachedLbScores(),
+    getCachedProfiles(),
   ])
 
   const profileMap: Record<string, { full_name: string; institution: string }> = {}
-  for (const p of (lbProfiles ?? [])) {
+  for (const p of lbProfiles) {
     if (p.full_name) profileMap[p.id] = { full_name: p.full_name, institution: p.institution ?? '' }
   }
 
-  const userModules: Record<string, { full_name: string; institution: string; completed: Set<number> }> = {}
-  for (const row of (lbScores ?? [])) {
+  const userModules: Record<string, { full_name: string; institution: string; completed: Set<number>; bestTimes: Record<number, number> }> = {}
+  for (const row of lbScores) {
     const prof = profileMap[row.user_id]
     if (!prof) continue
-    if (!userModules[row.user_id]) userModules[row.user_id] = { ...prof, completed: new Set() }
-    userModules[row.user_id].completed.add(row.module_id)
+    if (!userModules[row.user_id]) userModules[row.user_id] = { ...prof, completed: new Set(), bestTimes: {} }
+    const entry = userModules[row.user_id]
+    entry.completed.add(row.module_id)
+    const t = (row as { time_taken?: number | null }).time_taken ?? Infinity
+    if (entry.bestTimes[row.module_id] === undefined || t < entry.bestTimes[row.module_id]) {
+      entry.bestTimes[row.module_id] = t
+    }
   }
 
   const allRanked = Object.entries(userModules)
-    .map(([uid, d]) => ({ uid, full_name: d.full_name, institution: d.institution, modulesCompleted: d.completed.size }))
-    .sort((a, b) => b.modulesCompleted - a.modulesCompleted)
+    .map(([uid, d]) => {
+      const totalTime = Object.values(d.bestTimes).reduce((sum, t) => sum + (isFinite(t) ? t : 0), 0)
+      const hasTime = Object.values(d.bestTimes).some(t => isFinite(t))
+      return { uid, full_name: d.full_name, institution: d.institution, modulesCompleted: d.completed.size, totalTime, hasTime }
+    })
+    .sort((a, b) => {
+      if (b.modulesCompleted !== a.modulesCompleted) return b.modulesCompleted - a.modulesCompleted
+      if (a.hasTime && !b.hasTime) return -1
+      if (!a.hasTime && b.hasTime) return 1
+      return a.totalTime - b.totalTime
+    })
 
   const currentUserIdx = allRanked.findIndex(u => u.uid === user.id)
   const currentUserRank = currentUserIdx >= 0 ? currentUserIdx + 1 : allRanked.length + 1
-  const total = totalModules ?? 0
+  const total = totalModules
 
   const MEDALS = ['🥇', '🥈', '🥉']
+
+  function formatTime(seconds: number): string {
+    if (!seconds) return '—'
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return m > 0 ? `${m}m ${s}s` : `${s}s`
+  }
 
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
-        <div className="sidebar-header"><h2 className="glow-text">CYBERSENSE</h2></div>
+        <div className="sidebar-header"><a href="/" style={{ textDecoration: 'none' }}><h2 className="glow-text">CYBERSENSE</h2></a></div>
         <nav className="nav-menu">
           <a href="/user/home" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-house" /></div><span>HOME</span>
@@ -120,6 +142,7 @@ export default async function LeaderboardPage() {
                   <th>Institution</th>
                   <th>Progress</th>
                   <th style={{ textAlign: 'right' }}>Modules</th>
+                  <th style={{ textAlign: 'right' }}>Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,6 +168,9 @@ export default async function LeaderboardPage() {
                       </td>
                       <td style={{ textAlign: 'right', fontFamily: 'Orbitron', fontSize: '0.9rem', color: 'var(--neon-blue)' }}>
                         {entry.modulesCompleted}/{total}
+                      </td>
+                      <td style={{ textAlign: 'right', fontFamily: 'Orbitron', fontSize: '0.85rem', color: 'var(--neon-purple)' }}>
+                        {entry.hasTime ? formatTime(entry.totalTime) : '—'}
                       </td>
                     </tr>
                   )

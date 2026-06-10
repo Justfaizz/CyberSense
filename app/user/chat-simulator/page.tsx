@@ -37,6 +37,7 @@ function ChatSimulatorInner() {
   const [messages, setMessages]     = useState<{ type: 'npc'|'player'|'divider'; html: string }[]>([])
   const chatRef = useRef<HTMLDivElement>(null)
   const scenariosRef = useRef<Scenario[]>([])
+  const startTimeRef = useRef<number>(0)
 
   useEffect(() => {
     const supabase = createClient()
@@ -73,6 +74,7 @@ function ChatSimulatorInner() {
         scenariosRef.current = mapped
         setScenarios(mapped)
         setLoading(false)
+        startTimeRef.current = Date.now()
         loadQuestion(0, [], mapped)
       })
   }, [moduleId]) // eslint-disable-line
@@ -112,10 +114,11 @@ function ChatSimulatorInner() {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
+          const time_taken = Math.round((Date.now() - startTimeRef.current) / 1000)
           await supabase.from('user_scores').insert({
             user_id: user.id, module_id: moduleId,
             score: newScore, total_questions: list.length,
-            percentage: pct, passed: pct === 100,
+            percentage: pct, passed: pct === 100, time_taken,
           })
           setSaveStatus('✓ Uploaded to HQ.')
         }

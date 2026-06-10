@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getBadgeForModule, type ModuleBadge } from '@/lib/badges'
@@ -31,6 +31,7 @@ function NetworkDefenseInner() {
 
   const [challenges, setChallenges] = useState<Challenge[]>([])
   const [loading, setLoading]       = useState(true)
+  const startTimeRef = useRef<number>(0)
   const [round, setRound]           = useState(0)
   const [score, setScore]           = useState(0)
   const [selectedTool, setTool]     = useState<string | null>(null)
@@ -63,6 +64,7 @@ function NetworkDefenseInner() {
         }))
         setChallenges(mapped)
         setLoading(false)
+        startTimeRef.current = Date.now()
       })
   }, [moduleId])
 
@@ -97,10 +99,11 @@ function NetworkDefenseInner() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        const time_taken = Math.round((Date.now() - startTimeRef.current) / 1000)
         await supabase.from('user_scores').insert({
           user_id: user.id, module_id: moduleId,
           score, total_questions: challenges.length,
-          percentage: pct, passed: pct === 100,
+          percentage: pct, passed: pct === 100, time_taken,
         })
         setSaveStatus('✓ Uploaded to HQ.')
       }
