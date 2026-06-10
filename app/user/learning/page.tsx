@@ -40,7 +40,7 @@ export default async function LearningPage() {
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
-        <div className="sidebar-header"><h2 className="glow-text">CYBERSENSE</h2></div>
+        <div className="sidebar-header"><a href="/" style={{ textDecoration: 'none' }}><h2 className="glow-text">CYBERSENSE</h2></a></div>
         <nav className="nav-menu">
           <a href="/user/home" className="nav-item">
             <div className="icon-box"><i className="fa-solid fa-house" /></div><span>HOME</span>

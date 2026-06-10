@@ -1,40 +1,33 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getCachedAvgScore, getCachedLbScores, getCachedProfiles } from '@/lib/cache'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Metrics
+  // Live queries (admin-specific, low frequency)
   const { count: totalStudents } = await supabase
     .from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student')
 
-  const { data: avgData } = await supabase.from('user_scores').select('percentage')
-  const avgScore = avgData?.length
-    ? Math.round(avgData.reduce((a, r) => a + Number(r.percentage), 0) / avgData.length)
-    : 0
-
-  // Recent activity — fetch scores and profiles separately to avoid RLS join issues
   const { data: activityScores } = await supabase
     .from('user_scores')
     .select('*')
     .order('completed_at', { ascending: false })
     .limit(10)
 
-  const { data: allProfiles } = await supabase.from('profiles').select('id, full_name')
+  // Shared data from cache (60 s) — avoids per-user DB hits
+  const [avgScore, allPassedScores, allProfiles] = await Promise.all([
+    getCachedAvgScore(),
+    getCachedLbScores(),
+    getCachedProfiles(),
+  ])
 
   const profileMap: Record<string, string> = {}
-  for (const p of (allProfiles ?? [])) { if (p.full_name) profileMap[p.id] = p.full_name }
+  for (const p of allProfiles) { if (p.full_name) profileMap[p.id] = p.full_name }
 
   const activity = (activityScores ?? []).map(s => ({ ...s, agentName: profileMap[s.user_id] ?? 'Unknown' }))
-
-  // Leaderboard — modules completed (same model as user leaderboard)
-  const { data: allPassedScores } = await supabase
-    .from('user_scores')
-    .select('user_id, module_id')
-    .eq('passed', true)
-    .limit(2000)
 
   const userModules: Record<string, Set<number>> = {}
   for (const row of (allPassedScores ?? [])) {
@@ -58,7 +51,7 @@ export default async function AdminDashboard() {
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
-        <div className="sidebar-header"><h2 className="glow-text">CYBERSENSE</h2></div>
+        <div className="sidebar-header"><a href="/" style={{ textDecoration: 'none' }}><h2 className="glow-text">CYBERSENSE</h2></a></div>
         <nav className="nav-menu">
           <a href="/admin/dashboard" className="nav-item active">
             <div className="icon-box"><i className="fa-solid fa-chart-pie" /></div><span>DASHBOARD</span>

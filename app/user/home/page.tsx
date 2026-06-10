@@ -1,32 +1,28 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import HomeClient from './HomeClient'
+import { getCachedLbScores, getCachedProfiles, getCachedModuleCount, getCachedLatestVideos } from '@/lib/cache'
 
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Run all independent queries in parallel
+  // User-specific query runs live; shared data comes from cache (60 s)
   const [
     { data: profile },
-    { count: totalModules },
     { data: passedRows },
-    { data: lbScores },
-    { data: lbProfiles },
-    { data: latestVideos },
+    totalModules,
+    lbScores,
+    lbProfiles,
+    latestVideos,
   ] = await Promise.all([
     supabase.from('profiles').select('full_name').eq('id', user.id).single(),
-    supabase.from('modules').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('user_scores').select('module_id').eq('user_id', user.id).eq('passed', true),
-    supabase.from('user_scores').select('user_id, module_id').eq('passed', true).limit(1000),
-    supabase.from('profiles').select('id, full_name'),
-    supabase
-      .from('videos')
-      .select('*')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(3),
+    getCachedModuleCount(),
+    getCachedLbScores(),
+    getCachedProfiles(),
+    getCachedLatestVideos(),
   ])
 
   const passedIds = [...new Set((passedRows ?? []).map(r => r.module_id))]
@@ -34,13 +30,13 @@ export default async function HomePage() {
 
   // Build profile name lookup
   const profileMap: Record<string, string> = {}
-  for (const p of (lbProfiles ?? [])) {
+  for (const p of lbProfiles) {
     if (p.full_name) profileMap[p.id] = p.full_name
   }
 
   // Aggregate distinct modules completed per user
   const userModules: Record<string, { full_name: string; completed: Set<number> }> = {}
-  for (const row of (lbScores ?? [])) {
+  for (const row of lbScores) {
     const name = profileMap[row.user_id]
     if (!name) continue
     if (!userModules[row.user_id]) userModules[row.user_id] = { full_name: name, completed: new Set() }
@@ -64,8 +60,8 @@ export default async function HomePage() {
       leaderboard={lbSorted}
       currentUserRank={currentUserRank}
       currentUserModules={currentUserModules}
-      totalModules={totalModules ?? 0}
-      latestVideos={latestVideos ?? []}
+      totalModules={totalModules}
+      latestVideos={latestVideos}
     />
   )
 }
